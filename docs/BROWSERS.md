@@ -16,7 +16,7 @@
 | --- | --- | --- | --- | --- | --- |
 | `<dialog>.showModal()`, `::backdrop` | 37 / 79 | 98 | 15.4 | 예 | 모든 대화상자 |
 | CSS Grid, 사용자 정의 속성(`var()`) | 57 / 16 | 52 | 10.1 | 예 | 레이아웃, 디자인 토큰 |
-| ES 모듈, 동적 `import()` | 61 / 16 | 60 | 10.1 | ES2020 | 앱 전체 |
+| ES2020 문법(번들 `dist/app.js`는 일반 스크립트) | 80 | 74 | 13.1 | ES2020 | 앱 전체 |
 | 옵셔널 체이닝 `?.`, `??` | 80 | 74 / 72 | 13.1 | ES2020 | 코드 전반 |
 | `fetch`, `WebSocket` | 42 / 5 | 39 / 11 | 10.1 / 5 | 예 | Supabase 어댑터(vendor 안) |
 | `inert` 속성 | 102 | 112 | 15.5 | 아니오 | 모바일 필터 시트가 열렸을 때 배경 차단 |
@@ -30,15 +30,14 @@
 | `MediaQueryList` `change` 이벤트 | 39 | 55 | 14 | 아니오 | 반응형 상태 전환 |
 | `CSS.escape()`, `CSS.supports()` | 46 / 28 | 31 / 22 | 10.1 / 9 | 아니오 | 포커스 복원, 지원 여부 점검 |
 | `<input type="date">` | 20 | 57 | 14.1 | 아니오 | 마감일 입력 |
-| `<link rel="modulepreload">` | 66 | 115 | **17** | 아니오 | 첫 화면 속도(아래 참고) |
 
-가장 높은 최소 버전은 `inert`의 **Safari 15.5**이며 모두 Safari 16.4 이하입니다. Firefox는 `inert`(112)와 `modulepreload`(115)가 가장 최근이라 「최신 2개 메이저」 범위에서는 문제가 없습니다.
+가장 높은 최소 버전은 `inert`의 **Safari 15.5**이며 모두 Safari 16.4 이하입니다. Firefox는 `inert`(112)가 가장 최근이라 「최신 2개 메이저」 범위에서는 문제가 없습니다.
 
 ### 알아둘 점
 
-- **`modulepreload`는 Safari 17부터** 지원됩니다. Safari 16.4~16.x에서는 이 링크가 무시되어 동작에는 문제가 없지만, ES 모듈이 한 단계씩 순차로 내려받아져 첫 화면이 조금 느립니다. 서버를 HTTP/2로 두면 이 차이가 거의 사라집니다.
+- 앱은 ES 모듈이 아니라 **일반 스크립트 하나**(`dist/app.js`)로 배포됩니다. 그래서 `index.html`을 파일로 직접 열어도(`file://`) 동작하고, 요청 수가 적어 모듈 연쇄 로딩 문제가 없습니다. 이 경로는 Edge에서 직접 확인했습니다.
 - ES2021 이상 문법(`??=`, `.at()`, `replaceAll` 등)과 `structuredClone`은 쓰지 않습니다. 자동 점검(`tests/static.test.js`)이 이를 막습니다.
-- 지원 여부 점검(`js/compat.js`)은 ES5로만 작성된 일반 스크립트라 오래된 브라우저에서도 안내 문구를 띄웁니다. 점검 항목: ES 모듈, `dialog`, `inert`, `:focus-visible`, CSS Grid, `fetch`/`WebSocket`.
+- 지원 여부 점검(`js/compat.js`)은 ES5로만 작성된 일반 스크립트라 오래된 브라우저에서도 안내 문구를 띄웁니다. 점검 항목: `dialog`, `inert`, `:focus-visible`, CSS Grid, `fetch`/`WebSocket`.
 
 ## 실제로 확인한 범위
 

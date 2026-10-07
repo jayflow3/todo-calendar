@@ -4,14 +4,20 @@
   "type": "module",
   "description": "부서 공용 업무 캘린더 (런타임 의존성 없음)",
   "scripts": {
-    "start": "node tools/serve.mjs",
+    "start": "npm run build && node tools/serve.mjs",
     "test": "node --test",
     "test:e2e": "node --test --test-concurrency=1 \"tests/e2e/*.e2e.js\"",
     "test:perf": "node --test --test-concurrency=1 \"tests/perf/*.perf.js\"",
-    "test:db": "node --test --test-concurrency=1 \"tests/db/*.db.js\""
+    "test:db": "node --test --test-concurrency=1 \"tests/db/*.db.js\"",
+    "build": "node tools/build.mjs",
+    "build:watch": "node tools/build.mjs --watch",
+    "pretest:e2e": "npm run build",
+    "pretest:perf": "npm run build",
+    "pretest:db": "npm run build"
   },
   "devDependencies": {
     "axe-core": "^4.14.0",
+    "esbuild": "^0.28.2",
     "playwright-core": "^1.63.0"
   }
 }

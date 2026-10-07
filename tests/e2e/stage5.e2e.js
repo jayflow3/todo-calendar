@@ -407,14 +407,31 @@ describe('7.6 지원 브라우저', () => {
     await context.close();
   });
 
-  test('index.html을 파일로 직접 열면(file://) 이유와 실행 방법이 안내된다', async () => {
-    const context = await browser.newContext();
+  test('index.html을 파일로 직접 열어도(file://) 동작한다: 사용자 식별·목록·칸반·새로고침 유지, CSP 위반 0건', async () => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const page = await context.newPage();
-    await page.goto(new URL('../../index.html', import.meta.url).href);
-    const notice = page.locator('#unsupported');
-    await notice.waitFor({ state: 'visible' });
-    assert.match(await notice.textContent(), /시작.bat.*npm start.*localhost:8080/);
-    assert.equal(await page.locator('#main').isVisible(), false);
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.addInitScript(() => {
+      window.__csp = [];
+      document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(e.violatedDirective));
+    });
+    const fileUrl = new URL('../../index.html', import.meta.url).href;
+    assert.match(fileUrl, /^file:/);
+    await page.goto(fileUrl);
+    const dialog = page.getByRole('dialog', { name: '이름을 입력하세요' });
+    await dialog.getByLabel('이름').fill('파일사용자');
+    await dialog.getByRole('button', { name: '확인' }).click();
+    await page.locator('.task-table').waitFor();
+    assert.equal(await page.locator('tbody tr').count(), 20); // 샘플 20건
+    await page.getByRole('tab', { name: '칸반' }).click();
+    assert.equal(await page.locator('.kanban-card').count(), 20);
+    await page.reload();
+    await page.locator('.kanban').waitFor();
+    assert.equal((await page.locator('#current-user').textContent()).trim(), '파일사용자'); // 저장된 사용자 유지
+    assert.equal(await page.locator('#unsupported').isVisible(), false);
+    assert.deepEqual(await page.evaluate(() => window.__csp), []);
+    assert.deepEqual(errors, []);
     await context.close();
   });
 

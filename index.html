@@ -54,44 +54,10 @@
     </div>
   </main>
   <div id="toast-region" class="toast-region" role="region" aria-label="알림" aria-live="polite"></div>
-  <!-- modulepreload:start (tools/modulepreload.mjs --write로 갱신) -->
-  <link rel="modulepreload" href="js/api/adapters/local.js">
-  <link rel="modulepreload" href="js/api/adapters/seed.js">
-  <link rel="modulepreload" href="js/api/errors.js">
-  <link rel="modulepreload" href="js/api/taskApi.js">
-  <link rel="modulepreload" href="js/domain/calendar.js">
-  <link rel="modulepreload" href="js/domain/date.js">
-  <link rel="modulepreload" href="js/domain/diff.js">
-  <link rel="modulepreload" href="js/domain/filters.js">
-  <link rel="modulepreload" href="js/domain/sort.js">
-  <link rel="modulepreload" href="js/domain/stats.js">
-  <link rel="modulepreload" href="js/domain/urgency.js">
-  <link rel="modulepreload" href="js/domain/uuid.js">
-  <link rel="modulepreload" href="js/domain/validation.js">
-  <link rel="modulepreload" href="js/state/actions.js">
-  <link rel="modulepreload" href="js/state/criteria.js">
-  <link rel="modulepreload" href="js/state/realtime.js">
-  <link rel="modulepreload" href="js/state/remote.js">
-  <link rel="modulepreload" href="js/state/selectors.js">
-  <link rel="modulepreload" href="js/state/store.js">
-  <link rel="modulepreload" href="js/state/urlState.js">
-  <link rel="modulepreload" href="js/ui/dialog.js">
-  <link rel="modulepreload" href="js/ui/dom.js">
-  <link rel="modulepreload" href="js/ui/filterBar.js">
-  <link rel="modulepreload" href="js/ui/form.js">
-  <link rel="modulepreload" href="js/ui/identity.js">
-  <link rel="modulepreload" href="js/ui/korean.js">
-  <link rel="modulepreload" href="js/ui/labels.js">
-  <link rel="modulepreload" href="js/ui/taskDetail.js">
-  <link rel="modulepreload" href="js/ui/taskForm.js">
-  <link rel="modulepreload" href="js/ui/taskParts.js">
-  <link rel="modulepreload" href="js/ui/toast.js">
-  <link rel="modulepreload" href="js/views/calendarView.js">
-  <link rel="modulepreload" href="js/views/dashboardView.js">
-  <link rel="modulepreload" href="js/views/kanbanView.js">
-  <link rel="modulepreload" href="js/views/listView.js">
-  <!-- modulepreload:end -->
   <script src="js/compat.js"></script>
-  <script type="module" src="js/main.js"></script>
+  <!-- 설정(선택): 없으면 404가 한 번 나지만 기본값(local 어댑터)으로 동작한다. js/config.example.js 참고 -->
+  <script src="js/config.js"></script>
+  <!-- 소스(js/)를 esbuild로 묶은 파일. file://에서도 열리도록 ES 모듈이 아닌 일반 스크립트다. npm run build -->
+  <script src="dist/app.js"></script>
 </body>
 </html>

@@ -12,7 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 명령어
 
-- `npm start` — 개발용 정적 서버(`http://localhost:8080`, 포트는 인자로 변경). `js/config.js`가 없으면 `config.example.js`(local 어댑터)로 동작한다.
+- **`npm run build`** — `js/`(ES 모듈)를 esbuild로 `dist/app.js`(일반 스크립트)로 묶는다. `index.html`은 이 번들만 읽으므로(그래야 `file://`로 직접 열어도 동작) **`js/`를 고치면 반드시 다시 빌드하고 `dist/app.js`도 함께 커밋한다.** `npm start`·`test:e2e`·`test:perf`·`test:db`는 먼저 자동 빌드하고, `npm test`는 번들이 최신인지 검사한다. 고치면서 보려면 `npm run build:watch`.
+- `npm start` — 개발용 정적 서버(`http://localhost:8080`, 포트는 인자로 변경). 설정 `js/config.js`(일반 스크립트, `window.TODO_CONFIG`)가 없으면 `js/defaultConfig.js`(local 어댑터)로 동작한다. `index.html`을 더블클릭해서 `file://`로 열어도 된다.
 - `npm test` — 단위 테스트(`node --test`, `tests/*.test.js`).
 - `npm run test:perf` — 1,000건 성능 측정(`tests/perf/`). CPU 부하에 민감해 다른 작업 없이 따로 실행한다(일반 e2e와 섞지 않는다). 목표(필터 100ms·INP 200ms)에 근접해 실행마다 흔들린다.
 - `npm run test:db` — `tests/db/`: DB 제약·트리거·RLS와 실제 supabase 어댑터(브라우저)를 PostgREST/Supabase에 대해 검증. `SUPABASE_URL`·`SUPABASE_REST_URL`·`SUPABASE_ANON_KEY`가 없으면 건너뛴다. 로컬 검증 방법은 `docs/TEST_REPORT.md`의 「실제 DB 검증」.
@@ -28,7 +29,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 실시간: `state/realtime.js`가 변경 구독·포커스 복귀 재조회·연결 끊김 시 폴링(배너 표시)을 맡고, `reloadTasks()`가 이전 목록과 비교해(`domain/diff.js`) 다른 사람의 변경만 카드 표시(`remoteMarks`)와 토스트로 알린다. local 어댑터에서만 `window.__todoTest`(연결 끊김·폴링 간격) 훅이 있다.
 - 충돌: 수정 폼은 `expectedUpdatedAt`으로 저장하되, 내가 바꾼 필드를 다른 사람이 건드리지 **않았으면** 충돌로 보지 않고 그대로 병합한다(필드 단위 LWW). 같은 필드일 때만 덮어쓰기/서버 값 사용을 묻는다(`taskForm.js`). `changeStatus`는 상태만 보내므로 `expectedUpdatedAt`을 쓰지 않는다.
 - 대시보드 카드는 현재 필터 **위에** 조건(`urgency`, 상태, 담당자)을 덧붙여 리스트로 이동한다. 그래서 카드 숫자와 리스트 건수가 같다. `urgency`(임박/지연)는 PRD의 4개 필터 외에 이 목적으로 추가한 필터 키다.
-- `index.html`의 `modulepreload` 목록은 `node tools/modulepreload.mjs --write`로 갱신한다(어긋나면 `npm test`가 실패). CSP는 인라인 스크립트·스타일을 막으므로 스타일은 CSS 파일로만, `el.style`·`style=` 속성을 쓰지 않는다.
+- CSP는 인라인 스크립트·스타일을 막으므로 스타일은 CSS 파일로만, `el.style`·`style=` 속성을 쓰지 않는다. 번들 안의 모듈은 테스트에서 직접 import할 수 없으므로, local 어댑터일 때만 `window.__todoTest`(연결 끊김 흉내, `criteria`, `taskApi`)로 접근한다.
+- 설정 파일(`js/config.js`)은 ES 모듈이 아니라 일반 스크립트다. 모듈로 만들면 `file://`에서 읽히지 않는다. 기본값은 `js/defaultConfig.js`, 예시는 `js/config.example.js`(둘이 같은 항목인지 테스트가 검사).
 - 리스트·칸반은 `renderProgressive`(ui/dom.js)로 앞부분(40행·열마다 15장)을 먼저 그리고 나머지를 다음 프레임들에 붙인다. 그 이상 행을 세는 테스트는 렌더가 끝났는지 확인해야 한다. `realtime.js`의 동기화는 할일뿐 아니라 부서원 목록도 함께 갱신한다(새로 등록된 사람의 이름이 보이도록).
 - 개발용 샘플은 `js/api/adapters/seed.js`(local, 저장소 키 `todo.local.db.v2`, 바꾸면 키 버전을 올린다)와 `supabase/seed.sql`. 일부 테스트가 제목·「오늘 마감 1건」에 의존하므로 기존 항목은 바꾸지 말고 추가만 한다.
 - 칸반은 열마다 100장까지만 그리고 「더 보기」로 나머지를 펼친다(1,000건에서 필터 갱신 100ms 목표).
@@ -44,11 +46,11 @@ PRD는 이전 초안(localStorage 기반 일정 캘린더)을 대체한다. loca
 
 ## 기술 제약
 
-- HTML / CSS / Vanilla JS(ES 모듈). 프레임워크·번들러·npm 런타임 의존성 없음. 필요한 라이브러리(`@supabase/supabase-js`)는 `vendor/`에 정적 파일로 포함한다.
+- HTML / CSS / Vanilla JS(소스는 ES 모듈, 배포는 esbuild로 묶은 `dist/app.js`). 프레임워크·npm **런타임** 의존성 없음(esbuild·Playwright·axe는 개발 도구). 필요한 라이브러리(`@supabase/supabase-js`)는 `vendor/`에 정적 파일로 포함한다.
 - 외부 CDN·웹폰트 요청 금지(사내망 차단 대비).
 - 모든 색·간격·모서리·그림자·모션 값은 `css/tokens.css`의 CSS 변수만 사용한다. 컴포넌트 CSS에 hex 색상, px 간격 숫자를 직접 쓰지 않는다(0, 1px 테두리 등 구조적 값 제외). 토큰 값을 바꿔도 WCAG 2.1 AA 명도 대비(본문 4.5:1, UI 요소 3:1)를 유지한다.
 - 사용자 입력(제목·설명·댓글·이름·라벨)을 `innerHTML`에 넣지 않는다. 텍스트는 `textContent`로 출력하고, HTML을 조립해야 하면 공통 `escapeHtml()`을 거친다.
-- 클라이언트 번들·저장소에는 Supabase anon key만 둔다. service role key는 어디에도 쓰지 않는다. 키와 URL은 `js/config.js`(git 제외, `config.example.js`만 커밋)에서 읽는다.
+- 클라이언트 번들·저장소에는 Supabase anon key만 둔다. service role key는 어디에도 쓰지 않는다. 키와 URL은 `js/config.js`(git 제외, `config.example.js`만 커밋)에서 읽는다(일반 스크립트).
 - 날짜는 한국 시간(Asia/Seoul) 달력일 기준 `YYYY-MM-DD` 문자열로 다룬다. `new Date('YYYY-MM-DD')`로 파싱하지 않는다.
 - 데이터 접근은 `js/api/taskApi.js` 하나만 거친다. 화면 코드가 Supabase 클라이언트를 직접 부르지 않는다. 어댑터는 `supabase`와 `local`(localStorage, 키 없이 개발·검증용) 두 종류이며 같은 인터페이스·같은 트리거 동작을 따른다.
 - 순수 로직(긴급 배지, 통계, 필터, 충돌 처리)은 UI와 분리해 `js/domain/`에 두고 `node --test`로 테스트한다.

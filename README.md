@@ -4,7 +4,7 @@
 
 > 이 앱은 **서로 신뢰하는 내부 구성원만** 쓰는 환경을 전제로 합니다. 이름은 본인 확인 수단이 아니므로 사칭을 막지 못합니다. [docs/KNOWN_LIMITS.md](docs/KNOWN_LIMITS.md)를 먼저 읽어 주세요.
 
-HTML / CSS / 바닐라 JS(ES 모듈)로 만들었고, 빌드 도구와 런타임 의존성이 없습니다.
+HTML / CSS / 바닐라 JS로 만들었고 런타임 의존성이 없습니다. 소스(`js/`, ES 모듈)는 개발 도구 `esbuild`로 하나의 일반 스크립트(`dist/app.js`)로 묶어 쓰며, 이 결과물도 저장소에 들어 있습니다.
 
 ## 바로 실행해 보기 (Supabase 없이)
 
@@ -14,30 +14,31 @@ Node.js 22 이상이 필요합니다(개발 서버·단위 테스트용).
 npm start            # http://localhost:8080 에서 열기 (포트는 npm start -- 3000)
 ```
 
-터미널이 불편하면 폴더의 **`시작.bat`을 더블클릭**하세요. 서버를 켜고 브라우저를 자동으로 엽니다(검은 창을 닫으면 멈춥니다).
+**서버 없이 `index.html`을 더블클릭**해도 열립니다(주소가 `file:///…`). 이때 데이터는 그 브라우저의 localStorage에 저장됩니다. 서버로 열고 싶으면 폴더의 **`시작.bat`을 더블클릭**하세요(서버를 켜고 브라우저를 자동으로 엽니다. 검은 창을 닫으면 멈춥니다).
 
-> **`index.html`을 더블클릭해서(주소가 `file://…`) 열면 동작하지 않습니다.** 브라우저가 이 방식에서는 ES 모듈을 막기 때문이며, 이때는 화면에 안내가 표시됩니다. 반드시 `http://localhost:8080`처럼 서버를 거쳐 여세요. VS Code에서는 Live Server 같은 확장이 같은 일을 해 주므로 바로 열립니다.
+> **소스(`js/`)를 고쳤다면 `npm run build`로 `dist/app.js`를 다시 만들어야 `index.html`에 반영됩니다.** (`npm start`, `npm run test:*`는 먼저 자동으로 빌드합니다. 고치면서 바로 보려면 `npm run build:watch`.) 빌드를 잊으면 `npm test`가 「dist/app.js가 오래되었습니다」로 알려 줍니다.
 
-`js/config.js`가 없으면 **local 어댑터**(브라우저 localStorage)로 동작하고, 첫 실행에 **샘플 할일 20건·댓글 4건·부서원 6명**이 들어갑니다(마감일은 오늘 기준이라 임박·지연 배지와 캘린더를 바로 볼 수 있습니다). 샘플을 처음 상태로 되돌리려면 브라우저 개발자 도구에서 이 사이트의 localStorage를 지우세요. 팀 공유는 되지 않으므로 화면·기능을 써 보는 용도입니다. 같은 브라우저의 다른 탭에서는 변경이 실시간으로 반영되어 동시 편집도 흉내 낼 수 있습니다.
+설정 파일 `js/config.js`가 없으면(콘솔에 「파일을 찾을 수 없음」이 한 줄 나오지만 정상입니다) **local 어댑터**(브라우저 localStorage)로 동작하고, 첫 실행에 **샘플 할일 20건·댓글 4건·부서원 6명**이 들어갑니다(마감일은 오늘 기준이라 임박·지연 배지와 캘린더를 바로 볼 수 있습니다). 샘플을 처음 상태로 되돌리려면 브라우저 개발자 도구에서 이 사이트의 localStorage를 지우세요. 팀 공유는 되지 않으므로 화면·기능을 써 보는 용도입니다. 같은 브라우저의 다른 탭에서는 변경이 실시간으로 반영되어 동시 편집도 흉내 낼 수 있습니다.
 
 ## 팀이 함께 쓰기 (Supabase)
 
 1. `supabase/migrations/0001_init.sql`을 Supabase 프로젝트에 적용합니다.
-2. `js/config.example.js`를 `js/config.js`로 복사해 `adapter: 'supabase'`, `supabaseUrl`, `supabaseAnonKey`(anon 키만)를 채웁니다.
-3. 정적 파일을 웹서버에 복사해 배포합니다.
+2. `js/config.example.js`를 `js/config.js`로 복사해 `adapter: 'supabase'`, `supabaseUrl`, `supabaseAnonKey`(anon 키만)를 채웁니다. (ES 모듈이 아니라 `window.TODO_CONFIG = {…}` 형식의 일반 스크립트입니다.)
+3. `index.html`, `css/`, `dist/`, `js/compat.js`, `js/config.js`, `vendor/`를 웹서버에 복사해 배포합니다.
 
 자세한 절차, 백업·복원, 부서원 관리, 키 교체, 장애 대응은 [docs/OPERATIONS.md](docs/OPERATIONS.md)에 있습니다.
 
 ## 폴더 구조
 
 ```
-index.html          앱 진입점(CSP·noindex, modulepreload 목록 포함)
+index.html          앱 진입점(CSP·noindex). dist/app.js를 일반 스크립트로 읽는다
+dist/app.js         js/를 esbuild로 묶은 결과(자동 생성, 커밋됨) — 고치지 말고 npm run build
 dev.html            디자인 토큰 확인용 개발 페이지
 css/                tokens.css(디자인 토큰) · base.css · components.css
 js/
   main.js           진입점: 설정 → 데이터 계층 → URL 복원 → 사용자 식별 → 화면
   compat.js         지원하지 않는 브라우저 안내(ES5 일반 스크립트)
-  config.example.js 설정 예시(js/config.js는 git 제외)
+  defaultConfig.js  기본 설정   |  config.example.js 설정 예시(복사해서 js/config.js로, git 제외)
   api/              taskApi.js(화면이 쓰는 유일한 데이터 창구) + adapters/{local,supabase}.js
   domain/           UI와 무관한 순수 로직(날짜·검증·필터·정렬·통계·긴급 배지·충돌 판단)
   state/            store · selectors · criteria(검색·필터) · actions · realtime · remote · urlState
@@ -46,7 +47,7 @@ js/
 vendor/             supabase-js(정적 파일, 외부 CDN을 쓰지 않는다)
 supabase/           migrations/0001_init.sql · queries/kpi.sql
 tests/              단위 테스트(*.test.js) · e2e/(Playwright)
-tools/              개발 서버 · 명도 대비 계산 · modulepreload 생성
+tools/              개발 서버 · 빌드(esbuild) · 명도 대비 계산
 docs/               OPERATIONS · KNOWN_LIMITS · BROWSERS · TEST_REPORT
 ```
 
@@ -67,4 +68,4 @@ e2e는 `playwright-core`만 설치하고 **PC에 설치된 Microsoft Edge**를 �
 - 사용자 입력은 `innerHTML`에 넣지 않고 텍스트로만 출력합니다(`js/ui/dom.js`의 `h()`).
 - 화면 코드는 DB 클라이언트를 직접 부르지 않고 `taskApi`만 거칩니다.
 - ES2020까지의 문법만 씁니다. 지원 브라우저와 사용 기능은 [docs/BROWSERS.md](docs/BROWSERS.md)를 보세요.
-- `index.html`의 `modulepreload` 목록은 `node tools/modulepreload.mjs --write`로 갱신합니다(모듈을 추가·삭제하면 `npm test`가 알려 줍니다).
+- 소스를 고치면 `npm run build`로 `dist/app.js`를 다시 만들어 함께 커밋합니다(`npm test`가 최신 여부를 검사합니다).

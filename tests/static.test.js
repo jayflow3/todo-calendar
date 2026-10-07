@@ -190,12 +190,25 @@ test('호환: 지원 범위 밖 CSS 기능(:has, @container, @layer, nesting 등
   }
 });
 
-// ---------------------------------------------------------------- 성능: modulepreload 목록
-test('성능: index.html의 modulepreload 목록이 실제 모듈 그래프와 일치한다(tools/modulepreload.mjs --write)', async () => {
-  const { computePreloads, START, END } = await import('../tools/modulepreload.mjs');
+// ---------------------------------------------------------------- 번들(dist/app.js)
+test('번들: 커밋된 dist/app.js가 소스(js/)로 다시 빌드한 결과와 같다(다르면 npm run build 후 커밋)', async () => {
+  const { buildToString, committedBundle } = await import('../tools/build.mjs');
+  assert.equal(committedBundle(), await buildToString(), 'dist/app.js가 오래되었습니다. npm run build 를 실행하세요.');
+});
+
+test('번들: index.html은 file://에서도 열리도록 ES 모듈이 아닌 일반 스크립트(dist/app.js)를 읽는다', () => {
   const html = read('index.html');
-  const block = html.slice(html.indexOf(START), html.indexOf(END));
-  const listed = [...block.matchAll(/<link rel="modulepreload" href="([^"]+)">/g)].map((m) => m[1]).sort();
-  assert.deepEqual(listed, computePreloads());
-  assert.ok(listed.length > 20);
+  assert.doesNotMatch(html, /type="module"/);
+  assert.ok(html.includes('<script src="dist/app.js"></script>'));
+  assert.ok(html.includes('<script src="js/config.js"></script>'));
+  const bundle = read('dist/app.js');
+  assert.doesNotMatch(bundle, /^\s*(import|export)\s/m); // 모듈 문법이 남아 있으면 일반 스크립트로 실행할 수 없다
+  assert.doesNotMatch(bundle, /\.innerHTML\b|\beval\s*\(|new Function\s*\(/);
+});
+
+test('설정: js/config.example.js(일반 스크립트)의 항목이 기본 설정(defaultConfig.js)과 같다', async () => {
+  const { default: defaults } = await import('../js/defaultConfig.js');
+  const window = {};
+  new Function('window', read('js/config.example.js'))(window);
+  assert.deepEqual(window.TODO_CONFIG, defaults);
 });

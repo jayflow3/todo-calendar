@@ -25,7 +25,7 @@ after(async () => {
   server?.stop();
 });
 
-const CONFIG = () => `export default ${JSON.stringify({
+const CONFIG = () => `window.TODO_CONFIG = ${JSON.stringify({
   adapter: 'supabase', supabaseUrl: URL_BASE, supabaseAnonKey: KEY,
   categories: ['기획', '개발', '디자인', '운영', '기타'], overloadThreshold: 8, pollIntervalMs: 30000,
 })};`;

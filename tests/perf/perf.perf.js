@@ -176,7 +176,7 @@ describe('7.2 성능(1,000건)', () => {
     for (const [view, name] of [['list', '리스트'], ['kanban', '칸반'], ['calendar', '캘린더'], ['dashboard', '대시보드']]) {
       await switchView(page, name);
       result[name] = await page.evaluate(async () => {
-        const { setQuery, toggleFilter, clearAll } = await import('/js/state/criteria.js');
+        const { setQuery, toggleFilter, clearAll } = window.__todoTest.criteria;
         // 상태 변경 → 렌더 → 스타일·레이아웃·첫 페인트까지 걸린 시간을 잰다(페인트 직후의 매크로태스크 시점).
         // 점진 렌더링의 나머지 조각은 이 시점 이후에 붙으므로 포함하지 않는다. 다음 측정 전에 조각이 끝나도록 잠시 쉰다.
         const paint = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
@@ -202,7 +202,7 @@ describe('7.2 성능(1,000건)', () => {
   test('저장 요청 응답 시간(local 어댑터): 참고용 — Supabase 서버 응답 p95는 미검증', async () => {
     const { page, context } = await openAsUser(browser, server.url);
     const times = await page.evaluate(async () => {
-      const { taskApi } = await import('/js/api/taskApi.js');
+      const { taskApi } = window.__todoTest;
       const [task] = await taskApi.listTasks();
       const out = [];
       for (let i = 0; i < 40; i++) {

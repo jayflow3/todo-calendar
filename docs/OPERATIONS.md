@@ -22,11 +22,11 @@
 
 ## 2. 설정 파일 `js/config.js`
 
-1. `js/config.example.js`를 `js/config.js`로 복사합니다(`js/config.js`는 git에 올리지 않습니다).
+1. `js/config.example.js`를 `js/config.js`로 복사합니다(`js/config.js`는 git에 올리지 않습니다). ES 모듈이 아니라 `window.TODO_CONFIG = {…}`를 설정하는 **일반 스크립트**입니다(파일로 직접 열어도 읽히도록). 적지 않은 항목은 기본값(`js/defaultConfig.js`)을 씁니다.
 2. 값을 채웁니다.
 
    ```js
-   export default {
+   window.TODO_CONFIG = {
      adapter: 'supabase',
      supabaseUrl: 'https://<프로젝트 ref>.supabase.co',
      supabaseAnonKey: '<anon(public) key>',   // Project Settings → API → anon public
@@ -50,17 +50,17 @@ connect-src 'self' https://<프로젝트 ref>.supabase.co wss://<프로젝트 re
 
 ## 4. 배포 (정적 파일 복사)
 
-빌드 단계가 없습니다. 아래만 웹서버 문서 루트에 복사합니다.
+배포할 때 빌드는 필요 없습니다. 묶인 결과물(`dist/app.js`)이 저장소에 들어 있어서 아래 파일만 웹서버 문서 루트에 복사하면 됩니다. (소스 `js/`를 고쳤다면 먼저 `npm run build`.)
 
 | 복사 | 제외(개발용) |
 | --- | --- |
-| `index.html`, `css/`, `js/`(**`config.js` 포함**, `config.example.js`는 있어도 무방), `vendor/supabase-js.umd.js` | `tests/`, `tools/`, `docs/`, `supabase/`, `node_modules/`, `dev.html`, `PRD.md`, `package*.json` |
+| `index.html`, `css/`, `dist/app.js`, `js/compat.js`, `js/config.js`(**직접 만든 설정**), `vendor/supabase-js.umd.js` | `js/`의 나머지 소스, `tests/`, `tools/`, `docs/`, `supabase/`, `node_modules/`, `dev.html`, `PRD.md`, `package*.json` |
 
 권장 웹서버 설정(nginx 예시, 사내 주소에 맞게 수정):
 
 ```nginx
 server {
-  listen 443 ssl http2;                # HTTP/2: ES 모듈 35여 개가 한꺼번에 내려와 첫 화면이 빨라진다
+  listen 443 ssl http2;
   server_name todo.example.internal;
   root /var/www/todo;
 
