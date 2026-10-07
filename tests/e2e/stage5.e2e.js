@@ -407,6 +407,17 @@ describe('7.6 지원 브라우저', () => {
     await context.close();
   });
 
+  test('index.html을 파일로 직접 열면(file://) 이유와 실행 방법이 안내된다', async () => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.goto(new URL('../../index.html', import.meta.url).href);
+    const notice = page.locator('#unsupported');
+    await notice.waitFor({ state: 'visible' });
+    assert.match(await notice.textContent(), /시작.bat.*npm start.*localhost:8080/);
+    assert.equal(await page.locator('#main').isVisible(), false);
+    await context.close();
+  });
+
   test('지원 브라우저에서는 안내가 보이지 않는다', async () => {
     const { page, context } = await openAsUser(browser, server.url);
     assert.equal(await page.locator('#unsupported').isVisible(), false);

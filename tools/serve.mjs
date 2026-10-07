@@ -35,4 +35,8 @@ createServer(async (req, res) => {
     res.writeHead(err.status ?? 404, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end(err.status === 403 ? 'forbidden' : 'not found');
   }
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') console.error(`포트 ${port}이(가) 이미 사용 중입니다. 서버가 이미 실행 중일 수 있으니 http://localhost:${port} 로 접속해 보세요. 다른 포트: node tools/serve.mjs 3000`);
+  else console.error(err.message);
+  process.exit(1);
 }).listen(port, () => console.log(`http://localhost:${port}`));
