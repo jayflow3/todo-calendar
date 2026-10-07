@@ -1,0 +1,85 @@
+/* 디자인 토큰 (PRD 8.2). 색·간격·모서리·그림자·모션 값은 이 파일에서만 정의한다. */
+:root {
+  /* 색상 */
+  --color-brand-violet: #7c3aed;
+  --color-brand-indigo: #4f46e5;
+  --gradient-brand: linear-gradient(135deg, var(--color-brand-violet), var(--color-brand-indigo));
+  --color-bg: #f5f3ff;
+  --color-surface: #ffffff;
+  --color-text: #1e1b4b;
+  --color-text-muted: #475569;
+  --color-on-brand: #ffffff;
+  --color-border-strong: #64748b;
+  --color-border-subtle: #e2e8f0;
+  --color-focus-ring: #4f46e5;
+  --color-error: #b91c1c;
+
+  /* 상태 배지 (fg / bg) */
+  --badge-status-todo-fg: #334155;
+  --badge-status-todo-bg: #e2e8f0;
+  --badge-status-in-progress-fg: #1e40af;
+  --badge-status-in-progress-bg: #dbeafe;
+  --badge-status-done-fg: #065f46;
+  --badge-status-done-bg: #d1fae5;
+
+  /* 우선순위 배지 */
+  --badge-priority-high-fg: #991b1b;
+  --badge-priority-high-bg: #fee2e2;
+  --badge-priority-medium-fg: #92400e;
+  --badge-priority-medium-bg: #fef3c7;
+  --badge-priority-low-fg: #475569;
+  --badge-priority-low-bg: #f1f5f9;
+
+  /* 긴급 배지 */
+  --badge-urgent-soon-fg: #9a3412;
+  --badge-urgent-soon-bg: #ffedd5;
+  --badge-urgent-overdue-fg: #ffffff;
+  --badge-urgent-overdue-bg: #b91c1c;
+
+  /* 간격 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* 모서리 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* 그림자 */
+  --shadow-card: 0 1px 2px rgba(30, 27, 75, 0.06), 0 4px 12px rgba(79, 70, 229, 0.08);
+  --shadow-card-hover: 0 2px 4px rgba(30, 27, 75, 0.08), 0 8px 20px rgba(79, 70, 229, 0.14);
+  --shadow-dialog: 0 12px 40px rgba(30, 27, 75, 0.25);
+
+  /* 모션 */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* 브레이크포인트: 태블릿 시작 / 데스크탑 시작 / 와이드 시작 (media query에서는 변수를 못 쓰므로 값은 PRD 7.1과 동일하게 유지) */
+  --bp-sm: 640px;
+  --bp-md: 1024px;
+  --bp-lg: 1440px;
+
+  /* 크기 */
+  --size-touch: 44px;
+  --size-content-max: 1440px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* 타이포그래피 */
+  --font-sans: "Pretendard", system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-size-sm: 0.8125rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --line-height-base: 1.5;
+}
