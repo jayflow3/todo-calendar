@@ -1,11 +1,14 @@
 // 화면에서 쓰는 데이터 동작. taskApi만 호출하고 결과를 store에 반영한다.
 import { taskApi } from '../api/taskApi.js';
 import { showError, showToast } from '../ui/toast.js';
+import { announceRemoteChanges } from './remote.js';
 import { getState, setState } from './store.js';
 
 export async function reloadTasks() {
   try {
-    setState({ tasks: await taskApi.listTasks(), loading: false });
+    const next = await taskApi.listTasks();
+    announceRemoteChanges(getState().tasks, next); // 다른 사람의 변경이면 카드 표시와 알림
+    setState({ tasks: next, loading: false });
   } catch (err) {
     setState({ loading: false });
     showError(`목록을 불러오지 못했습니다. 잠시 후 다시 시도하세요. (${err.message})`);
@@ -31,12 +34,12 @@ export async function changeStatus(task, status) {
     ),
   });
   try {
-    await taskApi.updateTask(task.id, { status }, { expectedUpdatedAt: task.updated_at });
+    // 상태만 보내므로 expectedUpdatedAt은 쓰지 않는다: 다른 필드를 동시에 수정한 사람과 충돌하지 않는다(필드 단위 LWW).
+    await taskApi.updateTask(task.id, { status });
   } catch (err) {
     setState({ tasks: before });
     showError(
-      err.code === 'CONFLICT' ? '다른 사람이 먼저 수정했습니다. 최신 상태를 불러옵니다.'
-      : err.code === 'DELETED' ? '이미 삭제된 항목입니다.'
+      err.code === 'DELETED' ? '이미 삭제된 항목입니다.'
       : `상태를 바꾸지 못했습니다. 다시 시도하세요. (${err.message})`,
     );
   }

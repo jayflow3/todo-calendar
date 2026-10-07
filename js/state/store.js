@@ -8,6 +8,7 @@ const state = {
   members: [],
   tasks: [],
   loading: true,
+  remoteMarks: {}, // 다른 사람이 방금 수정한 할일 id → {by, at}
   currentUser: null,
   // 뷰·검색·필터는 하나의 전역 상태이며 뷰를 바꿔도 유지된다(PRD 5.5). URL과 동기화된다.
   view: 'list',

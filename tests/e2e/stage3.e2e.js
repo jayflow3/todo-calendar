@@ -264,7 +264,9 @@ describe('단계 3: 필터·칸반·캘린더·긴급 배지', () => {
     assert.equal(await page.getByRole('tab', { selected: true }).textContent(), '칸반');
     await page.keyboard.press('ArrowRight');
     assert.equal(await page.getByRole('tab', { selected: true }).textContent(), '캘린더');
-    await page.keyboard.press('ArrowRight'); // 대시보드는 비활성이므로 건너뛴다
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.getByRole('tab', { selected: true }).textContent(), '대시보드');
+    await page.keyboard.press('ArrowRight'); // 끝에서 처음으로 순환
     assert.equal(await page.getByRole('tab', { selected: true }).textContent(), '리스트');
     assert.equal(await page.getByRole('tabpanel').getAttribute('aria-labelledby'), 'tab-list');
     await context.close();

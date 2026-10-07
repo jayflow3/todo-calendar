@@ -85,7 +85,7 @@ test('URL: 파싱과 직렬화는 서로 역변환이다', () => {
   const state = {
     view: 'calendar',
     query: '회의 자료',
-    filters: { status: ['todo', 'in_progress'], priority: ['high'], assignee: ['m1', UNASSIGNED], category: ['기획'] },
+    filters: { status: ['todo', 'in_progress'], priority: ['high'], assignee: ['m1', UNASSIGNED], category: ['기획'], urgency: ['overdue'] },
     month: '2026-11',
   };
   const search = buildSearch(state);

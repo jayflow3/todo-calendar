@@ -1,7 +1,8 @@
 // 앱 진입점: 설정 → 데이터 접근 계층 → URL 복원 → 부서원 → 작성자 식별 → 할일 목록 → 화면.
-import { configureTaskApi, taskApi } from './api/taskApi.js';
+import { configureTaskApi, getAdapter } from './api/taskApi.js';
 import { reloadMembers, reloadTasks } from './state/actions.js';
 import { setView } from './state/criteria.js';
+import { startRealtime } from './state/realtime.js';
 import { getState, setState, subscribeStore } from './state/store.js';
 import { buildSearch, parseUrlState } from './state/urlState.js';
 import { initFilterBar } from './ui/filterBar.js';
@@ -10,10 +11,16 @@ import { memberName } from './ui/labels.js';
 import { openTaskForm } from './ui/taskForm.js';
 import { showError } from './ui/toast.js';
 import { renderCalendarView } from './views/calendarView.js';
+import { renderDashboardView } from './views/dashboardView.js';
 import { renderKanbanView } from './views/kanbanView.js';
 import { renderListView } from './views/listView.js';
 
-const RENDERERS = { list: renderListView, kanban: renderKanbanView, calendar: renderCalendarView };
+const RENDERERS = {
+  list: renderListView,
+  kanban: renderKanbanView,
+  calendar: renderCalendarView,
+  dashboard: renderDashboardView,
+};
 
 async function loadConfig() {
   try {
@@ -27,8 +34,7 @@ async function loadConfig() {
 /** 새로고침·링크 공유 후에도 뷰와 필터가 유지되도록 URL에서 상태를 복원한다. */
 function restoreFromUrl() {
   const { view, query, filters, month } = parseUrlState(location.search);
-  // 대시보드는 단계 4에서 구현되므로 그 전에는 리스트로 대체한다.
-  setState({ view: RENDERERS[view] ? view : 'list', query, filters, ...(month && { month }) });
+  setState({ view, query, filters, ...(month && { month }) });
 }
 
 function syncUrl() {
@@ -110,10 +116,18 @@ async function start() {
   await ensureCurrentUser();
   await reloadTasks();
 
-  // 같은 어댑터에서 오는 변경(다른 탭 포함)을 반영한다. 실시간 처리 강화는 단계 4.
-  taskApi.subscribe((change) => {
-    if (change.remote) reloadTasks();
+  // 실시간 반영: 변경 구독 + 포커스 복귀 재조회 + 연결 끊김 시 폴링(PRD 6.3)
+  const realtime = startRealtime({
+    banner: document.getElementById('connection-status'),
+    pollMs: config.pollIntervalMs ?? 30000,
   });
+  if (config.adapter === 'local') {
+    // 개발·테스트 전용 훅: 연결 끊김을 흉내 내고 폴링 간격을 줄인다.
+    window.__todoTest = {
+      setConnected: (online) => getAdapter().setConnected(online),
+      setPollInterval: realtime.setPollInterval,
+    };
+  }
 }
 
 start().catch((err) => {

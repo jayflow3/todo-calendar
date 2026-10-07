@@ -35,6 +35,9 @@ function requireActor() {
   return actorId;
 }
 
+/** 어댑터 자체(개발·테스트용 훅 접근에만 쓴다). */
+export const getAdapter = () => adapter;
+
 export const taskApi = {
   /** 이후 작성·수정·댓글에 자동으로 쓰이는 members.id (created_by / updated_by / author_id). */
   setActor(memberId) {

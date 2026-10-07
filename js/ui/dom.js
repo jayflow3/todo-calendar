@@ -27,6 +27,16 @@ export function h(tag, props, ...children) {
   return el;
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** SVG 요소 생성. 숫자·문자열 속성만 받으며 사용자 입력을 마크업으로 해석하지 않는다. */
+export function svg(tag, props, ...children) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [key, value] of Object.entries(props ?? {})) if (value != null && value !== false) el.setAttribute(key, String(value));
+  append(el, children);
+  return el;
+}
+
 export function append(parent, children) {
   for (const child of children.flat(Infinity)) {
     if (child == null || child === false) continue;

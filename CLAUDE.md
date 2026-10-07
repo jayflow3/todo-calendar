@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 현재 상태
 
-5단계로 진행 중이다: 1 기반·스키마(완료) → 2 작성자 식별·CRUD·댓글·리스트 뷰(완료) → 3 필터·칸반·캘린더(완료) → 4 대시보드·실시간·충돌 → 5 비기능 점검·문서. 대시보드 탭은 아직 비활성이며, URL에 `view=dashboard`가 있어도 리스트로 대체된다.
+5단계로 진행 중이다: 1 기반·스키마(완료) → 2 작성자 식별·CRUD·댓글·리스트 뷰(완료) → 3 필터·칸반·캘린더(완료) → 4 대시보드·실시간·충돌(완료) → 5 비기능 점검·문서.
 
 ## 명령어
 
@@ -23,6 +23,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `js/api/taskApi.js` — 화면이 쓰는 유일한 데이터 창구. `setActor(memberId)`로 현재 사용자를 지정하면 `created_by`/`updated_by`/`author_id`를 자동으로 채운다. 어댑터는 `js/api/adapters/{local,supabase}.js`이며 DB 트리거 동작(`updated_at`, `completed_at`, `task_events`)을 local에서도 코드로 재현한다. 충돌은 `ApiError.code`(`CONFLICT`/`DELETED`/`NOT_FOUND`)로 구분한다.
 - `js/domain/` — UI와 무관한 순수 로직(날짜, 검증, 긴급 배지, 정렬). 검증 규칙은 DB 제약과 같은 값을 쓴다.
 - `js/state/store.js` + `actions.js` — 전역 상태와 데이터 동작. 화면은 store 구독으로 다시 그린다. 검색어·필터·뷰·월은 `criteria.js`로 바꾸고, **모든 뷰는 `selectors.js`의 `getVisibleTasks()` 하나만 통해 목록을 받는다**(뷰별로 따로 필터링하지 않는다). `urlState.js`가 이 상태를 URL 쿼리와 오가며 `main.js`가 `history.replaceState`로 동기화한다.
+- 실시간: `state/realtime.js`가 변경 구독·포커스 복귀 재조회·연결 끊김 시 폴링(배너 표시)을 맡고, `reloadTasks()`가 이전 목록과 비교해(`domain/diff.js`) 다른 사람의 변경만 카드 표시(`remoteMarks`)와 토스트로 알린다. local 어댑터에서만 `window.__todoTest`(연결 끊김·폴링 간격) 훅이 있다.
+- 충돌: 수정 폼은 `expectedUpdatedAt`으로 저장하되, 내가 바꾼 필드를 다른 사람이 건드리지 **않았으면** 충돌로 보지 않고 그대로 병합한다(필드 단위 LWW). 같은 필드일 때만 덮어쓰기/서버 값 사용을 묻는다(`taskForm.js`). `changeStatus`는 상태만 보내므로 `expectedUpdatedAt`을 쓰지 않는다.
+- 대시보드 카드는 현재 필터 **위에** 조건(`urgency`, 상태, 담당자)을 덧붙여 리스트로 이동한다. 그래서 카드 숫자와 리스트 건수가 같다. `urgency`(임박/지연)는 PRD의 4개 필터 외에 이 목적으로 추가한 필터 키다.
+- 칸반은 열마다 100장까지만 그리고 「더 보기」로 나머지를 펼친다(1,000건에서 필터 갱신 100ms 목표).
 - `changeStatus`(actions.js)는 낙관적 업데이트이며 드래그·카드 메뉴·리스트 어디서든 같은 경로를 쓴다. 실패하면 되돌리고 토스트를 띄운다.
 - `js/ui/dom.js`의 `h()`로만 DOM을 만든다(문자열은 항상 텍스트 노드). 다시 그릴 때 포커스를 유지하려면 요소에 `data-focus-key`를 붙이고 `preserveFocus()`를 쓴다. 대화상자는 `ui/dialog.js`(네이티브 `<dialog>`)를 통한다.
 - e2e에서 칸반 드래그는 `page.mouse`로 단계적으로 움직여야 한다(Playwright `dragTo`는 한 번에 점프해 엉뚱한 카드를 집는다). 스크롤 영역 안의 `.visually-hidden`(절대 위치)은 컨테이너에 `position: relative`가 없으면 문서 폭을 넓힌다(`.kanban` 참고).

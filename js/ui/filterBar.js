@@ -1,6 +1,6 @@
 // 검색창·필터 패널·활성 필터 칩·결과 건수. 데스크탑(≥1024px)은 좌측 사이드바,
 // 태블릿(640~1023px)은 접이식 패널, 모바일(≤639px)은 전체 화면 시트(배경 inert)다. 배치는 CSS가 정한다.
-import { countActiveFilters, FILTER_KEYS, UNASSIGNED } from '../domain/filters.js';
+import { countActiveFilters, FILTER_KEYS, UNASSIGNED, URGENCY_VALUES } from '../domain/filters.js';
 import { PRIORITIES, STATUSES } from '../domain/validation.js';
 import { clearAll, removeFilterValue, setQuery, toggleFilter } from '../state/criteria.js';
 import { getVisibleTasks, hasActiveCriteria } from '../state/selectors.js';
@@ -8,7 +8,8 @@ import { getState, memberById, subscribeStore } from '../state/store.js';
 import { h, preserveFocus } from './dom.js';
 import { memberName, PRIORITY_LABEL, STATUS_LABEL } from './labels.js';
 
-const GROUP_LABEL = { status: '상태', priority: '우선순위', assignee: '담당자', category: '카테고리' };
+const GROUP_LABEL = { status: '상태', priority: '우선순위', assignee: '담당자', category: '카테고리', urgency: '마감' };
+const URGENCY_LABEL = { soon: '임박(D-3~D-day)', overdue: '지연' };
 const SEARCH_DEBOUNCE_MS = 200;
 
 function optionsFor(key, state) {
@@ -20,6 +21,7 @@ function optionsFor(key, state) {
         { value: UNASSIGNED, text: '미배정' },
         ...state.members.filter((m) => m.active).map((m) => ({ value: m.id, text: memberName(m) })),
       ];
+    case 'urgency': return URGENCY_VALUES.map((v) => ({ value: v, text: URGENCY_LABEL[v] }));
     case 'category': {
       const known = state.config?.categories ?? [];
       const extra = [...new Set(state.tasks.map((t) => t.category).filter((c) => c && !known.includes(c)))];
@@ -32,6 +34,7 @@ function optionsFor(key, state) {
 function chipLabel(key, value) {
   if (key === 'status') return STATUS_LABEL[value];
   if (key === 'priority') return PRIORITY_LABEL[value];
+  if (key === 'urgency') return URGENCY_LABEL[value];
   if (key === 'assignee') return value === UNASSIGNED ? '미배정' : memberName(memberById(value)) || '알 수 없음';
   return value;
 }

@@ -10,7 +10,11 @@ import { getState, memberById } from '../state/store.js';
 import { h, preserveFocus } from '../ui/dom.js';
 import { memberName, priorityBadge, STATUS_LABEL, urgencyBadge } from '../ui/labels.js';
 import { openTaskDetail } from '../ui/taskDetail.js';
-import { statusSelect } from '../ui/taskParts.js';
+import { remoteMark, statusSelect } from '../ui/taskParts.js';
+
+// 열마다 처음 100장만 그린다(1,000건에서도 필터 갱신 100ms 이내를 지키기 위함). 나머지는 「더 보기」.
+const COLUMN_LIMIT = 100;
+const expanded = new Set();
 
 function card(task, today) {
   const assignee = memberName(memberById(task.assignee_id)) || '미배정';
@@ -35,16 +39,29 @@ function card(task, today) {
       onClick: () => openTaskDetail(task.id),
     }, task.title),
     h('p', { class: 'muted kanban-card__meta' }, `${assignee} · ${task.due_date ?? '마감일 없음'}`),
+    remoteMark(task),
     statusSelect(task, 'kanban-status'),
   );
 }
 
 function column(status, tasks, today) {
   const headingId = `kanban-heading-${status}`;
+  const shown = expanded.has(status) ? tasks : tasks.slice(0, COLUMN_LIMIT);
+  const hidden = tasks.length - shown.length;
   const body = h(
     'ul',
     { class: 'kanban-col__body' },
-    ...(tasks.length ? tasks.map((t) => card(t, today)) : [h('li', { class: 'muted kanban-empty' }, '항목 없음')]),
+    ...(tasks.length ? shown.map((t) => card(t, today)) : [h('li', { class: 'muted kanban-empty' }, '항목 없음')]),
+    hidden > 0 && h(
+      'li',
+      null,
+      h('button', {
+        type: 'button',
+        class: 'btn btn--secondary',
+        'data-focus-key': `kanban-more-${status}`,
+        onClick: () => { expanded.add(status); renderKanbanView(document.getElementById('view-root')); },
+      }, `${hidden}건 더 보기`),
+    ),
   );
   const section = h(
     'section',

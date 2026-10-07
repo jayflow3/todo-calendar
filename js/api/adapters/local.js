@@ -14,6 +14,8 @@ const EVENT_FIELDS = ['status', 'assignee_id', 'due_date', 'priority'];
 
 export function createLocalAdapter({ storage = globalThis.localStorage, now = () => new Date() } = {}) {
   const listeners = new Set();
+  const statusListeners = new Set();
+  let connected = true; // false면 변경 알림을 전달하지 않는다(연결 끊김 시뮬레이션)
   const clone = (v) => structuredClone(v);
 
   function load() {
@@ -25,7 +27,7 @@ export function createLocalAdapter({ storage = globalThis.localStorage, now = ()
   }
 
   const save = (db) => storage.setItem(STORAGE_KEY, JSON.stringify(db));
-  const emit = (change) => listeners.forEach((fn) => fn(change));
+  const emit = (change) => connected && listeners.forEach((fn) => fn(change));
 
   // 다른 탭의 변경은 storage 이벤트로 받는다.
   if (typeof globalThis.addEventListener === 'function') {
@@ -156,9 +158,23 @@ export function createLocalAdapter({ storage = globalThis.localStorage, now = ()
       return clone(load().events.filter((e) => e.task_id === taskId).sort(oldestFirst));
     },
 
-    subscribe(onChange) {
+    /** onStatus(status): 'SUBSCRIBED' | 'CLOSED' — supabase 어댑터와 같은 값을 쓴다. */
+    subscribe(onChange, onStatus) {
       listeners.add(onChange);
-      return () => listeners.delete(onChange);
+      if (onStatus) {
+        statusListeners.add(onStatus);
+        onStatus(connected ? 'SUBSCRIBED' : 'CLOSED');
+      }
+      return () => {
+        listeners.delete(onChange);
+        statusListeners.delete(onStatus);
+      };
+    },
+
+    /** 개발·테스트용: 실시간 연결이 끊기거나 복구된 상황을 흉내 낸다. */
+    setConnected(next) {
+      connected = next;
+      statusListeners.forEach((fn) => fn(next ? 'SUBSCRIBED' : 'CLOSED'));
     },
   };
 }

@@ -4,6 +4,7 @@ import { todayKst } from '../domain/date.js';
 import { getUrgency } from '../domain/urgency.js';
 import { validateComment, ValidationError } from '../domain/validation.js';
 import { deleteTask } from '../state/actions.js';
+import { formatFieldValue, FIELD_LABEL } from '../state/remote.js';
 import { getState, memberById, subscribeStore } from '../state/store.js';
 import { confirmDialog, openDialog } from './dialog.js';
 import { h } from './dom.js';
@@ -12,13 +13,6 @@ import { formatDateTime, memberName, priorityBadge, statusBadge, urgencyBadge } 
 import { openTaskForm } from './taskForm.js';
 import { showError } from './toast.js';
 
-const EVENT_FIELD_LABEL = { status: '상태', assignee_id: '담당자', due_date: '마감일', priority: '우선순위' };
-
-function eventValue(fieldName, value) {
-  if (value == null) return '없음';
-  if (fieldName === 'assignee_id') return memberName(memberById(value)) || '알 수 없음';
-  return value;
-}
 
 export function openTaskDetail(taskId) {
   const findTask = () => getState().tasks.find((t) => t.id === taskId);
@@ -72,7 +66,7 @@ export function openTaskDetail(taskId) {
             h(
               'li',
               null,
-              `${formatDateTime(e.created_at)} · ${memberName(memberById(e.actor_id))}: ${EVENT_FIELD_LABEL[e.field]} ${eventValue(e.field, e.from_value)} → ${eventValue(e.field, e.to_value)}`,
+              `${formatDateTime(e.created_at)} · ${memberName(memberById(e.actor_id))}: ${FIELD_LABEL[e.field]} ${formatFieldValue(e.field, e.from_value)} → ${formatFieldValue(e.field, e.to_value)}`,
             ),
           )
         : [h('li', { class: 'muted' }, '변경 이력이 없습니다')]),

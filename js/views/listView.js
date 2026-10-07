@@ -8,7 +8,7 @@ import { getState, memberById, setState } from '../state/store.js';
 import { h, preserveFocus } from '../ui/dom.js';
 import { option } from '../ui/form.js';
 import { memberName, priorityBadge, urgencyBadge } from '../ui/labels.js';
-import { statusSelect } from '../ui/taskParts.js';
+import { remoteMark, statusSelect } from '../ui/taskParts.js';
 import { openTaskDetail } from '../ui/taskDetail.js';
 import { openTaskForm } from '../ui/taskForm.js';
 
@@ -86,7 +86,8 @@ function row(task, today) {
     'tr',
     { class: 'task-row', onClick: (e) => { if (!e.target.closest('select, button')) openTaskDetail(task.id); } },
     h('td', { 'data-label': '제목', class: 'task-row__title' },
-      h('button', { type: 'button', class: 'link-btn', 'data-focus-key': `open-${task.id}`, onClick: () => openTaskDetail(task.id) }, task.title)),
+      h('button', { type: 'button', class: 'link-btn', 'data-focus-key': `open-${task.id}`, onClick: () => openTaskDetail(task.id) }, task.title),
+      remoteMark(task)),
     h('td', { 'data-label': '상태' }, statusSelect(task)),
     h('td', { 'data-label': '우선순위' }, priorityBadge(task.priority)),
     h('td', { 'data-label': '담당자' }, assignee || '미배정'),

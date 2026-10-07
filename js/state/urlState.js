@@ -1,11 +1,11 @@
 // 뷰·검색·필터를 URL 쿼리로 보존한다(PRD F-11). DOM에 의존하지 않는 순수 함수라 node에서 테스트한다.
-import { emptyFilters, FILTER_KEYS } from '../domain/filters.js';
+import { emptyFilters, FILTER_KEYS, URGENCY_VALUES } from '../domain/filters.js';
 import { parseMonthKey } from '../domain/calendar.js';
 import { PRIORITIES, STATUSES } from '../domain/validation.js';
 
 export const VIEWS = ['list', 'kanban', 'calendar', 'dashboard'];
 
-const ENUMS = { status: STATUSES, priority: PRIORITIES };
+const ENUMS = { status: STATUSES, priority: PRIORITIES, urgency: URGENCY_VALUES };
 
 /** @returns {{view: string, query: string, filters: object, month: string|null}} */
 export function parseUrlState(search) {

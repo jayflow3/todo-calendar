@@ -6,4 +6,5 @@ export default {
   supabaseAnonKey: '',
   categories: ['기획', '개발', '디자인', '운영', '기타'],
   overloadThreshold: 8,
+  pollIntervalMs: 30000, // 실시간 연결이 끊겼을 때 재조회 간격
 };

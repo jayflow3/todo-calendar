@@ -1,5 +1,6 @@
 // 리스트·칸반이 함께 쓰는 조각.
 import { changeStatus } from '../state/actions.js';
+import { getState } from '../state/store.js';
 import { h } from './dom.js';
 import { option } from './form.js';
 import { STATUS_LABEL } from './labels.js';
@@ -17,4 +18,10 @@ export function statusSelect(task, keyPrefix = 'status') {
     },
     ...Object.entries(STATUS_LABEL).map(([value, text]) => option(value, text)),
   );
+}
+
+/** 다른 사람이 방금 수정한 카드에 「○○님이 수정함」을 표시한다. */
+export function remoteMark(task) {
+  const mark = getState().remoteMarks[task.id];
+  return mark ? h('span', { class: 'remote-mark', role: 'status' }, `${mark.by}님이 수정함`) : null;
 }
