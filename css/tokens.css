@@ -13,6 +13,8 @@
   --color-border-subtle: #e2e8f0;
   --color-focus-ring: #4f46e5;
   --color-error: #b91c1c;
+  --color-overlay: rgba(30, 27, 75, 0.5);
+  --color-skeleton: #e2e8f0;
 
   /* 상태 배지 (fg / bg) */
   --badge-status-todo-fg: #334155;
@@ -71,6 +73,10 @@
   /* 크기 */
   --size-touch: 44px;
   --size-content-max: 1440px;
+  --size-dialog: 560px;
+  --size-dialog-wide: 760px;
+  --size-toast-max: 420px;
+  --size-skeleton-row: 56px;
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 

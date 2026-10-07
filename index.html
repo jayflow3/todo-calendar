@@ -9,10 +9,30 @@
   <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header class="app-header">
-    <h1>부서 공용 업무 캘린더</h1>
+    <div class="app-header__inner">
+      <h1>부서 공용 업무 캘린더</h1>
+      <div class="app-header__user">
+        <span>현재 사용자: <strong id="current-user"></strong></span>
+        <button type="button" class="btn btn--ghost-on-brand" id="change-user">변경</button>
+      </div>
+      <button type="button" class="btn btn--secondary" id="new-task">새 할일</button>
+    </div>
+    <nav aria-label="뷰 전환">
+      <ul class="view-tabs">
+        <li><button type="button" class="view-tab" aria-current="page">리스트</button></li>
+        <li><button type="button" class="view-tab" disabled>칸반</button></li>
+        <li><button type="button" class="view-tab" disabled>캘린더</button></li>
+        <li><button type="button" class="view-tab" disabled>대시보드</button></li>
+      </ul>
+    </nav>
   </header>
-  <main class="page" id="app"></main>
+  <main class="page" id="main" tabindex="-1">
+    <div id="connection-status" class="connection-status" role="status" aria-live="polite"></div>
+    <div id="view-root"></div>
+  </main>
+  <div id="toast-region" class="toast-region" role="region" aria-label="알림" aria-live="polite"></div>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

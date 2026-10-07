@@ -5,6 +5,10 @@
   "description": "부서 공용 업무 캘린더 (런타임 의존성 없음)",
   "scripts": {
     "start": "node tools/serve.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "test:e2e": "node --test tests/e2e/stage2.e2e.js"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.63.0"
   }
 }

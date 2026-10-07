@@ -8,7 +8,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 현재 상태
 
-아직 구현 전이다. 단계별 개발 프롬프트(5단계: 기반·스키마 → CRUD·리스트 → 필터·칸반·캘린더 → 대시보드·실시간·충돌 → 비기능 점검·문서)로 진행할 예정이다. 코드가 생기면 빌드·테스트 명령(`node --test`, Playwright 스모크 등)을 이 파일에 추가한다.
+5단계로 진행 중이다: 1 기반·스키마(완료) → 2 작성자 식별·CRUD·댓글·리스트 뷰(완료) → 3 필터·칸반·캘린더 → 4 대시보드·실시간·충돌 → 5 비기능 점검·문서. 칸반·캘린더·대시보드 탭은 아직 비활성이다.
+
+## 명령어
+
+- `npm start` — 개발용 정적 서버(`http://localhost:8080`, 포트는 인자로 변경). `js/config.js`가 없으면 `config.example.js`(local 어댑터)로 동작한다.
+- `npm test` — 단위 테스트(`node --test`, `tests/*.test.js`).
+- `npm run test:e2e` — Playwright 스모크(`tests/e2e/*.e2e.js`). `playwright-core`만 설치하고 **시스템에 설치된 Edge**(`channel: 'msedge'`)를 쓴다. 브라우저를 따로 내려받지 않는다. 스크린샷은 `SHOT_DIR=<폴더>`를 주면 저장한다.
+- 단일 테스트: `node --test --test-name-pattern="<이름>" tests/<파일>`
+- DB 스키마는 `supabase/migrations/0001_init.sql`. Supabase를 쓸 때만 적용하며 local 어댑터는 필요 없다.
+
+## 코드 구조
+
+- `js/api/taskApi.js` — 화면이 쓰는 유일한 데이터 창구. `setActor(memberId)`로 현재 사용자를 지정하면 `created_by`/`updated_by`/`author_id`를 자동으로 채운다. 어댑터는 `js/api/adapters/{local,supabase}.js`이며 DB 트리거 동작(`updated_at`, `completed_at`, `task_events`)을 local에서도 코드로 재현한다. 충돌은 `ApiError.code`(`CONFLICT`/`DELETED`/`NOT_FOUND`)로 구분한다.
+- `js/domain/` — UI와 무관한 순수 로직(날짜, 검증, 긴급 배지, 정렬). 검증 규칙은 DB 제약과 같은 값을 쓴다.
+- `js/state/store.js` + `actions.js` — 전역 상태와 데이터 동작. 화면은 store 구독으로 다시 그린다.
+- `js/ui/dom.js`의 `h()`로만 DOM을 만든다(문자열은 항상 텍스트 노드). 다시 그릴 때 포커스를 유지하려면 요소에 `data-focus-key`를 붙이고 `preserveFocus()`를 쓴다. 대화상자는 `ui/dialog.js`(네이티브 `<dialog>`)를 통한다.
 
 ## 제품 개요
 
