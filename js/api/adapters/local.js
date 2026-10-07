@@ -16,7 +16,7 @@ export function createLocalAdapter({ storage = globalThis.localStorage, now = ()
   const listeners = new Set();
   const statusListeners = new Set();
   let connected = true; // false면 변경 알림을 전달하지 않는다(연결 끊김 시뮬레이션)
-  const clone = (v) => structuredClone(v);
+  const clone = (v) => JSON.parse(JSON.stringify(v)); // 저장 데이터는 JSON 값만 쓴다
 
   function load() {
     const raw = storage.getItem(STORAGE_KEY);

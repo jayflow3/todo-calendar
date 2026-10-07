@@ -220,14 +220,14 @@ describe('단계 3: 필터·칸반·캘린더·긴급 배지', () => {
 
     // 오늘 칸을 클릭해 오늘 마감으로 3건 더 등록 → 시드 1건과 합쳐 4건
     for (const title of ['캘린더1', '캘린더2', '캘린더3']) {
-      await page.getByRole('button', { name: new RegExp(`^${m}월 ${d}일 새 할일 등록`) }).click();
+      await page.getByRole('button', { name: new RegExp(`^${d}, ${m}월 새 할일 등록`) }).click();
       const form = page.getByRole('dialog', { name: '새 할일' });
       assert.equal(await form.getByLabel('마감일').inputValue(), today); // 클릭한 날짜가 채워진다
       await form.getByLabel('제목').fill(title);
       await form.getByRole('button', { name: '등록' }).click();
       await form.waitFor({ state: 'detached' });
     }
-    const more = page.getByRole('button', { name: new RegExp(`${m}월 ${d}일 할일 \\d+개 더 보기`) });
+    const more = page.getByRole('button', { name: new RegExp(`^\\+\\d+개 더 보기, ${m}월 ${d}일`) });
     assert.equal((await more.textContent()).trim(), '+1개');
     const cell = page.locator('td.cal-cell--today');
     assert.equal(await cell.locator('.cal-task').count(), 3); // 칸 안에는 3개까지

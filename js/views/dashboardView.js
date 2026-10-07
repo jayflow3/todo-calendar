@@ -51,13 +51,13 @@ function metricCard({ id, title, value, note, onClick, disabled }) {
   const label = h('span', { class: 'metric__label' }, title);
   const number = h('span', { class: 'metric__value', 'data-metric': id }, value);
   const body = [label, number, note && h('span', { class: 'metric__note' }, note)];
+  if (onClick) body.push(h('span', { class: 'visually-hidden' }, ' 눌러서 리스트에서 보기'));
   return onClick
     ? h('button', {
         type: 'button',
         class: 'metric metric--action card',
         'data-focus-key': `metric-${id}`,
         disabled,
-        'aria-label': `${title} ${value}${note ? `, ${note}` : ''}. 눌러서 리스트에서 보기`,
         onClick,
       }, ...body)
     : h('div', { class: 'metric card' }, ...body);

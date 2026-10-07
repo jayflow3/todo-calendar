@@ -86,7 +86,7 @@ export function openIdentityDialog({ closable }) {
         return;
       }
       try {
-        member ??= await taskApi.addMember({ name, label });
+        if (!member) member = await taskApi.addMember({ name, label });
       } catch (err) {
         const errors = err instanceof ValidationError ? err.errors : {};
         nameField.setError(errors.name ?? null);

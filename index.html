@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <!-- CSP: 인라인 스크립트·스타일 금지, 외부 요청은 DB 도메인만. connect-src의 *.supabase.co는 배포 시 실제 프로젝트 주소로 좁힌다(docs/OPERATIONS.md). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>부서 공용 업무 캘린더</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="css/tokens.css">
@@ -10,6 +13,7 @@
   <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
+  <div id="unsupported" class="unsupported" role="alert" hidden></div>
   <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header class="app-header">
     <div class="app-header__inner">
@@ -34,6 +38,7 @@
     <div class="layout">
       <aside id="filter-panel" class="filter-panel" aria-label="필터" data-open="false"></aside>
       <div class="layout__content" id="content">
+        <h2 class="visually-hidden" id="view-heading"></h2>
         <div class="toolbar">
           <div class="field toolbar__search">
             <label class="field__label" for="search">검색</label>
@@ -49,6 +54,44 @@
     </div>
   </main>
   <div id="toast-region" class="toast-region" role="region" aria-label="알림" aria-live="polite"></div>
+  <!-- modulepreload:start (tools/modulepreload.mjs --write로 갱신) -->
+  <link rel="modulepreload" href="js/api/adapters/local.js">
+  <link rel="modulepreload" href="js/api/adapters/seed.js">
+  <link rel="modulepreload" href="js/api/errors.js">
+  <link rel="modulepreload" href="js/api/taskApi.js">
+  <link rel="modulepreload" href="js/domain/calendar.js">
+  <link rel="modulepreload" href="js/domain/date.js">
+  <link rel="modulepreload" href="js/domain/diff.js">
+  <link rel="modulepreload" href="js/domain/filters.js">
+  <link rel="modulepreload" href="js/domain/sort.js">
+  <link rel="modulepreload" href="js/domain/stats.js">
+  <link rel="modulepreload" href="js/domain/urgency.js">
+  <link rel="modulepreload" href="js/domain/uuid.js">
+  <link rel="modulepreload" href="js/domain/validation.js">
+  <link rel="modulepreload" href="js/state/actions.js">
+  <link rel="modulepreload" href="js/state/criteria.js">
+  <link rel="modulepreload" href="js/state/realtime.js">
+  <link rel="modulepreload" href="js/state/remote.js">
+  <link rel="modulepreload" href="js/state/selectors.js">
+  <link rel="modulepreload" href="js/state/store.js">
+  <link rel="modulepreload" href="js/state/urlState.js">
+  <link rel="modulepreload" href="js/ui/dialog.js">
+  <link rel="modulepreload" href="js/ui/dom.js">
+  <link rel="modulepreload" href="js/ui/filterBar.js">
+  <link rel="modulepreload" href="js/ui/form.js">
+  <link rel="modulepreload" href="js/ui/identity.js">
+  <link rel="modulepreload" href="js/ui/korean.js">
+  <link rel="modulepreload" href="js/ui/labels.js">
+  <link rel="modulepreload" href="js/ui/taskDetail.js">
+  <link rel="modulepreload" href="js/ui/taskForm.js">
+  <link rel="modulepreload" href="js/ui/taskParts.js">
+  <link rel="modulepreload" href="js/ui/toast.js">
+  <link rel="modulepreload" href="js/views/calendarView.js">
+  <link rel="modulepreload" href="js/views/dashboardView.js">
+  <link rel="modulepreload" href="js/views/kanbanView.js">
+  <link rel="modulepreload" href="js/views/listView.js">
+  <!-- modulepreload:end -->
+  <script src="js/compat.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

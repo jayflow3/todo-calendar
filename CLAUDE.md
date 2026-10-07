@@ -8,12 +8,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 현재 상태
 
-5단계로 진행 중이다: 1 기반·스키마(완료) → 2 작성자 식별·CRUD·댓글·리스트 뷰(완료) → 3 필터·칸반·캘린더(완료) → 4 대시보드·실시간·충돌(완료) → 5 비기능 점검·문서.
+5단계로 진행 중이다: 1 기반·스키마(완료) → 2 작성자 식별·CRUD·댓글·리스트 뷰(완료) → 3 필터·칸반·캘린더(완료) → 4 대시보드·실시간·충돌(완료) → 5 비기능 점검·문서(완료). 점검 결과와 미검증 항목은 `docs/TEST_REPORT.md`.
 
 ## 명령어
 
 - `npm start` — 개발용 정적 서버(`http://localhost:8080`, 포트는 인자로 변경). `js/config.js`가 없으면 `config.example.js`(local 어댑터)로 동작한다.
 - `npm test` — 단위 테스트(`node --test`, `tests/*.test.js`).
+- `npm run test:perf` — 1,000건 성능 측정(`tests/perf/`). CPU 부하에 민감해 다른 작업 없이 따로 실행한다(일반 e2e와 섞지 않는다). 목표(필터 100ms·INP 200ms)에 근접해 실행마다 흔들린다.
 - `npm run test:e2e` — Playwright 시나리오(`tests/e2e/*.e2e.js`, 단계별 파일). `playwright-core`만 설치하고 **시스템에 설치된 Edge**(`channel: 'msedge'`)를 쓴다. 브라우저를 따로 내려받지 않는다. 스크린샷은 `SHOT_DIR=<폴더>`를 주면 저장한다.
 - 단일 테스트: `node --test --test-name-pattern="<이름>" tests/<파일>`
 - DB 스키마는 `supabase/migrations/0001_init.sql`. Supabase를 쓸 때만 적용하며 local 어댑터는 필요 없다.
@@ -26,6 +27,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 실시간: `state/realtime.js`가 변경 구독·포커스 복귀 재조회·연결 끊김 시 폴링(배너 표시)을 맡고, `reloadTasks()`가 이전 목록과 비교해(`domain/diff.js`) 다른 사람의 변경만 카드 표시(`remoteMarks`)와 토스트로 알린다. local 어댑터에서만 `window.__todoTest`(연결 끊김·폴링 간격) 훅이 있다.
 - 충돌: 수정 폼은 `expectedUpdatedAt`으로 저장하되, 내가 바꾼 필드를 다른 사람이 건드리지 **않았으면** 충돌로 보지 않고 그대로 병합한다(필드 단위 LWW). 같은 필드일 때만 덮어쓰기/서버 값 사용을 묻는다(`taskForm.js`). `changeStatus`는 상태만 보내므로 `expectedUpdatedAt`을 쓰지 않는다.
 - 대시보드 카드는 현재 필터 **위에** 조건(`urgency`, 상태, 담당자)을 덧붙여 리스트로 이동한다. 그래서 카드 숫자와 리스트 건수가 같다. `urgency`(임박/지연)는 PRD의 4개 필터 외에 이 목적으로 추가한 필터 키다.
+- `index.html`의 `modulepreload` 목록은 `node tools/modulepreload.mjs --write`로 갱신한다(어긋나면 `npm test`가 실패). CSP는 인라인 스크립트·스타일을 막으므로 스타일은 CSS 파일로만, `el.style`·`style=` 속성을 쓰지 않는다.
 - 칸반은 열마다 100장까지만 그리고 「더 보기」로 나머지를 펼친다(1,000건에서 필터 갱신 100ms 목표).
 - `changeStatus`(actions.js)는 낙관적 업데이트이며 드래그·카드 메뉴·리스트 어디서든 같은 경로를 쓴다. 실패하면 되돌리고 토스트를 띄운다.
 - `js/ui/dom.js`의 `h()`로만 DOM을 만든다(문자열은 항상 텍스트 노드). 다시 그릴 때 포커스를 유지하려면 요소에 `data-focus-key`를 붙이고 `preserveFocus()`를 쓴다. 대화상자는 `ui/dialog.js`(네이티브 `<dialog>`)를 통한다.

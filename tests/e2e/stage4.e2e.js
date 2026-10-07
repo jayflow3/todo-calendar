@@ -284,32 +284,3 @@ describe('단계 4: 실시간 반영과 충돌 처리(두 사용자)', () => {
     await context.close();
   });
 });
-
-describe('단계 4: 성능(1,000건)', () => {
-  test('1,000건에서 검색·필터 갱신 시간을 측정한다(목표 100ms 이내)', async () => {
-    const { page, context } = await openAsUser(browser, server.url);
-    await addRawTasks(page, 1000);
-    const results = {};
-
-    for (const [view, name] of [['list', '리스트'], ['kanban', '칸반'], ['calendar', '캘린더'], ['dashboard', '대시보드']]) {
-      await switchView(page, name);
-      // 앱이 쓰는 것과 같은 모듈 인스턴스로 검색을 바꾸고, 동기 렌더 시간을 잰다.
-      const ms = await page.evaluate(async () => {
-        const { setQuery, toggleFilter, clearAll } = await import('/js/state/criteria.js');
-        const run = (fn) => { const t0 = performance.now(); fn(); return performance.now() - t0; };
-        const samples = [
-          run(() => setQuery('서')),
-          run(() => setQuery('서 항')),
-          run(() => toggleFilter('status', 'todo')),
-          run(() => toggleFilter('priority', 'high')),
-          run(() => clearAll()),
-        ];
-        return samples;
-      });
-      results[view] = { max: Math.max(...ms), avg: ms.reduce((x, y) => x + y, 0) / ms.length };
-    }
-    console.log('  · 1,000건 필터 갱신(ms):', JSON.stringify(Object.fromEntries(Object.entries(results).map(([k, v]) => [k, `max ${v.max.toFixed(1)} / avg ${v.avg.toFixed(1)}`]))));
-    for (const [view, r] of Object.entries(results)) assert.ok(r.max < 100, `${view} 필터 갱신 최대 ${r.max.toFixed(1)}ms (목표 100ms)`);
-    await context.close();
-  });
-});

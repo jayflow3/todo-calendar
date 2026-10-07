@@ -29,6 +29,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  min-width: var(--size-touch);
   min-height: var(--size-touch);
   padding: var(--space-2) var(--space-4);
   border: 1px solid transparent;
@@ -224,6 +225,9 @@
 }
 
 .link-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-touch);
   padding: 0;
   background: none;
   border: 0;
@@ -269,6 +273,7 @@
 .dialog {
   width: calc(100% - var(--space-5));
   max-width: var(--size-dialog);
+  max-height: 90vh;
   max-height: 90dvh;
   padding: 0;
   background: var(--color-surface);
@@ -761,7 +766,8 @@
   cursor: pointer;
 }
 
-.cal-count {
+.cal-date[data-count]::after {
+  content: attr(data-count);
   margin-left: var(--space-1);
   padding: 0 var(--space-1);
   background: var(--color-brand-indigo);
@@ -837,11 +843,13 @@
 
   .cal-cell {
     height: auto;
+    padding: 0;
     text-align: center;
   }
 
   .cal-date {
     min-width: 0;
+    min-height: var(--size-touch);
     width: 100%;
     padding: 0;
   }
@@ -998,4 +1006,27 @@
     grid-column: 1 / -1;
     order: 3;
   }
+}
+
+/* 지원하지 않는 브라우저 안내(js/compat.js) */
+.unsupported {
+  margin: var(--space-5) auto;
+  max-width: var(--size-dialog-wide);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 639px) {
+  .cal-task {
+    min-height: var(--size-touch);
+  }
+}
+
+.kanban-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 10rem;
 }

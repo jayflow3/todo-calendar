@@ -6,9 +6,11 @@
   "scripts": {
     "start": "node tools/serve.mjs",
     "test": "node --test",
-    "test:e2e": "node --test \"tests/e2e/*.e2e.js\""
+    "test:e2e": "node --test --test-concurrency=1 \"tests/e2e/*.e2e.js\"",
+    "test:perf": "node --test --test-concurrency=1 \"tests/perf/*.perf.js\""
   },
   "devDependencies": {
+    "axe-core": "^4.14.0",
     "playwright-core": "^1.63.0"
   }
 }

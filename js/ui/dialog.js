@@ -2,6 +2,8 @@
 // 닫을 때 열기 전에 포커스가 있던 요소로 돌려준다.
 import { h, uid } from './dom.js';
 
+const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+
 /**
  * @param {{title: string, body: Node|Node[], closable?: boolean, onClosed?: Function, wide?: boolean}} opts
  * closable=false이면 Esc로도 닫히지 않는다(첫 방문 이름 입력).
@@ -15,6 +17,22 @@ export function openDialog({ title, body, closable = true, onClosed, wide = fals
     { class: `dialog${wide ? ' dialog--wide' : ''}`, 'aria-labelledby': titleId },
     h('div', { class: 'dialog__body stack' }, h('h2', { id: titleId, class: 'dialog__title' }, title), body),
   );
+
+  // 네이티브 modal <dialog>는 Tab이 마지막 요소를 지나면 브라우저 UI로 나간다. 대화상자 안에서 순환시킨다.
+  dialog.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab') return;
+    const focusable = [...dialog.querySelectorAll(FOCUSABLE)].filter((el) => el.getClientRects().length > 0);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
 
   dialog.addEventListener('cancel', (event) => {
     if (!closable) event.preventDefault();

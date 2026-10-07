@@ -54,7 +54,7 @@ function wireTabs() {
       ArrowRight: enabled[(index + 1) % enabled.length],
       ArrowLeft: enabled[(index - 1 + enabled.length) % enabled.length],
       Home: enabled[0],
-      End: enabled.at(-1),
+      End: enabled[enabled.length - 1],
     }[event.key];
     if (!next || index < 0) return;
     event.preventDefault();
@@ -81,6 +81,7 @@ function wireTabs() {
 function wireShell() {
   const viewRoot = document.getElementById('view-root');
   const userLabel = document.getElementById('current-user');
+  const heading = document.getElementById('view-heading');
   document.getElementById('new-task').addEventListener('click', () => openTaskForm());
   document.getElementById('change-user').addEventListener('click', () => openIdentityDialog({ closable: true }));
 
@@ -99,6 +100,7 @@ function wireShell() {
     userLabel.textContent = currentUser ? memberName(currentUser) : '';
     syncTabs();
     syncUrl();
+    heading.textContent = document.querySelector('[role="tab"][aria-selected="true"]')?.textContent ?? '';
     (RENDERERS[view] ?? renderListView)(viewRoot);
   };
   subscribeStore(render);
@@ -106,6 +108,7 @@ function wireShell() {
 }
 
 async function start() {
+  if (window.__unsupportedBrowser) return; // js/compat.js가 안내 문구를 이미 표시했다
   const config = await loadConfig();
   setState({ config });
   restoreFromUrl();

@@ -19,6 +19,8 @@ const mobileQuery = window.matchMedia('(max-width: 639px)');
 let selectedDay = null; // 모바일에서 선택한 날짜
 
 const dayLabel = (key) => `${Number(key.slice(5, 7))}월 ${Number(key.slice(8, 10))}일`;
+const dayNumber = (key) => Number(key.slice(8, 10));
+const monthNumber = (key) => Number(key.slice(5, 7));
 const newTaskOn = (dateKey) => openTaskForm({ defaults: { due_date: dateKey } });
 
 function taskButton(task, today, keyPrefix) {
@@ -64,7 +66,8 @@ function desktopCell(dateKey, tasks, { month, today }) {
       type: 'button',
       class: 'cal-date',
       'data-focus-key': `cal-date-${dateKey}`,
-      'aria-label': `${dayLabel(dateKey)} 새 할일 등록${dateKey === today ? ' (오늘)' : ''}`,
+      // 접근 가능한 이름은 눈에 보이는 날짜 숫자로 시작해야 한다(WCAG 2.5.3 Label in Name).
+      'aria-label': `${dayNumber(dateKey)}, ${monthNumber(dateKey)}월 새 할일 등록${dateKey === today ? ' (오늘)' : ''}`,
       onClick: (event) => { event.stopPropagation(); newTaskOn(dateKey); },
     }, String(Number(dateKey.slice(8, 10)))),
     ...shown.map((t) => taskButton(t, today, 'cal')),
@@ -72,7 +75,7 @@ function desktopCell(dateKey, tasks, { month, today }) {
       type: 'button',
       class: 'cal-more',
       'data-focus-key': `cal-more-${dateKey}`,
-      'aria-label': `${dayLabel(dateKey)} 할일 ${more}개 더 보기`,
+      'aria-label': `+${more}개 더 보기, ${dayLabel(dateKey)}`,
       onClick: (event) => { event.stopPropagation(); openDayDialog(dateKey, tasks, today); },
     }, `+${more}개`),
   );
@@ -87,9 +90,10 @@ function mobileCell(dateKey, tasks, { month, today }) {
       class: 'cal-date',
       'data-focus-key': `cal-date-${dateKey}`,
       'aria-pressed': String(dateKey === selectedDay),
-      'aria-label': `${dayLabel(dateKey)}, 할일 ${tasks.length}건${dateKey === today ? ' (오늘)' : ''}`,
+      'data-count': tasks.length > 0 ? String(tasks.length) : null,
+      'aria-label': `${dayNumber(dateKey)}, ${monthNumber(dateKey)}월, 할일 ${tasks.length}건${dateKey === today ? ' (오늘)' : ''}`,
       onClick: () => { selectedDay = dateKey; renderCalendarView(document.getElementById('view-root')); },
-    }, String(Number(dateKey.slice(8, 10))), tasks.length > 0 && h('span', { class: 'cal-count' }, String(tasks.length))),
+    }, String(Number(dateKey.slice(8, 10)))),
   );
 }
 

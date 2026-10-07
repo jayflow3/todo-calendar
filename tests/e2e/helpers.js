@@ -19,8 +19,8 @@ export async function launch() {
 }
 
 /** 첫 방문 이름 입력까지 마친 페이지. */
-export async function openAsUser(browser, url, name = '김민준', viewport = { width: 1280, height: 800 }, search = '') {
-  const context = await browser.newContext({ viewport });
+export async function openAsUser(browser, url, name = '김민준', viewport = { width: 1280, height: 800 }, search = '', contextOptions = {}) {
+  const context = await browser.newContext({ viewport, ...contextOptions });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
