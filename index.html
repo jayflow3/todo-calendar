@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>부서 공용 업무 캘린더</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
@@ -20,17 +21,32 @@
       <button type="button" class="btn btn--secondary" id="new-task">새 할일</button>
     </div>
     <nav aria-label="뷰 전환">
-      <ul class="view-tabs">
-        <li><button type="button" class="view-tab" aria-current="page">리스트</button></li>
-        <li><button type="button" class="view-tab" disabled>칸반</button></li>
-        <li><button type="button" class="view-tab" disabled>캘린더</button></li>
-        <li><button type="button" class="view-tab" disabled>대시보드</button></li>
-      </ul>
+      <div class="view-tabs" role="tablist" aria-label="보기 방식">
+        <button type="button" class="view-tab" role="tab" id="tab-list" data-view="list" aria-controls="view-root">리스트</button>
+        <button type="button" class="view-tab" role="tab" id="tab-kanban" data-view="kanban" aria-controls="view-root">칸반</button>
+        <button type="button" class="view-tab" role="tab" id="tab-calendar" data-view="calendar" aria-controls="view-root">캘린더</button>
+        <button type="button" class="view-tab" role="tab" id="tab-dashboard" data-view="dashboard" aria-controls="view-root" disabled>대시보드</button>
+      </div>
     </nav>
   </header>
   <main class="page" id="main" tabindex="-1">
     <div id="connection-status" class="connection-status" role="status" aria-live="polite"></div>
-    <div id="view-root"></div>
+    <div class="layout">
+      <aside id="filter-panel" class="filter-panel" aria-label="필터" data-open="false"></aside>
+      <div class="layout__content" id="content">
+        <div class="toolbar">
+          <div class="field toolbar__search">
+            <label class="field__label" for="search">검색</label>
+            <input class="field__input" id="search" type="search" autocomplete="off" aria-describedby="search-hint">
+            <p class="field__hint" id="search-hint">제목 또는 담당자 이름</p>
+          </div>
+          <button type="button" class="btn btn--secondary toolbar__filter-toggle" id="filter-toggle" aria-expanded="false" aria-controls="filter-panel">필터</button>
+          <p class="toolbar__count" id="result-count" role="status" aria-live="polite"></p>
+        </div>
+        <div id="filter-chips" class="chips"></div>
+        <div id="view-root" role="tabpanel"></div>
+      </div>
+    </div>
   </main>
   <div id="toast-region" class="toast-region" role="region" aria-label="알림" aria-live="polite"></div>
   <script type="module" src="js/main.js"></script>

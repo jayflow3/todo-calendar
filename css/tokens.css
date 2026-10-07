@@ -77,6 +77,9 @@
   --size-dialog-wide: 760px;
   --size-toast-max: 420px;
   --size-skeleton-row: 56px;
+  --size-sidebar: 16rem;
+  --size-kanban-col: 18rem;
+  --size-cal-cell-min: 7rem;
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 

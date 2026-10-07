@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node tools/serve.mjs",
     "test": "node --test",
-    "test:e2e": "node --test tests/e2e/stage2.e2e.js"
+    "test:e2e": "node --test \"tests/e2e/*.e2e.js\""
   },
   "devDependencies": {
     "playwright-core": "^1.63.0"

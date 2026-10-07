@@ -2,11 +2,13 @@
 import { todayKst } from '../domain/date.js';
 import { sortTasks } from '../domain/sort.js';
 import { getUrgency } from '../domain/urgency.js';
-import { changeStatus } from '../state/actions.js';
+import { clearAll } from '../state/criteria.js';
+import { getVisibleTasks, hasActiveCriteria } from '../state/selectors.js';
 import { getState, memberById, setState } from '../state/store.js';
 import { h, preserveFocus } from '../ui/dom.js';
 import { option } from '../ui/form.js';
-import { memberName, priorityBadge, STATUS_LABEL, urgencyBadge } from '../ui/labels.js';
+import { memberName, priorityBadge, urgencyBadge } from '../ui/labels.js';
+import { statusSelect } from '../ui/taskParts.js';
 import { openTaskDetail } from '../ui/taskDetail.js';
 import { openTaskForm } from '../ui/taskForm.js';
 
@@ -38,6 +40,14 @@ function skeleton() {
 }
 
 function emptyState() {
+  if (hasActiveCriteria()) {
+    return h(
+      'div',
+      { class: 'empty-state card stack' },
+      h('p', null, '조건에 맞는 할일이 없습니다.'),
+      h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn btn--secondary', onClick: clearAll }, '모두 해제')),
+    );
+  }
   return h(
     'div',
     { class: 'empty-state card stack' },
@@ -72,23 +82,12 @@ function sortControls(sort) {
 
 function row(task, today) {
   const assignee = memberName(memberById(task.assignee_id));
-  const statusSelect = h(
-    'select',
-    {
-      class: 'field__input field__input--compact',
-      'aria-label': `상태 변경: ${task.title}`,
-      'data-focus-key': `status-${task.id}`,
-      value: task.status,
-      onChange: (e) => changeStatus(task, e.target.value),
-    },
-    ...Object.entries(STATUS_LABEL).map(([value, text]) => option(value, text)),
-  );
   return h(
     'tr',
     { class: 'task-row', onClick: (e) => { if (!e.target.closest('select, button')) openTaskDetail(task.id); } },
     h('td', { 'data-label': '제목', class: 'task-row__title' },
       h('button', { type: 'button', class: 'link-btn', 'data-focus-key': `open-${task.id}`, onClick: () => openTaskDetail(task.id) }, task.title)),
-    h('td', { 'data-label': '상태' }, statusSelect),
+    h('td', { 'data-label': '상태' }, statusSelect(task)),
     h('td', { 'data-label': '우선순위' }, priorityBadge(task.priority)),
     h('td', { 'data-label': '담당자' }, assignee || '미배정'),
     h('td', { 'data-label': '카테고리' }, task.category ?? ''),
@@ -97,7 +96,8 @@ function row(task, today) {
 }
 
 export function renderListView(root) {
-  const { tasks, loading, sort, page } = getState();
+  const { loading, sort, page } = getState();
+  const tasks = getVisibleTasks();
   preserveFocus(() => {
     if (loading) return root.replaceChildren(skeleton());
     if (!tasks.length) return root.replaceChildren(emptyState());

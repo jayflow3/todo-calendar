@@ -1,12 +1,19 @@
-// 앱 진입점: 설정 → 데이터 접근 계층 → 부서원 → 작성자 식별 → 할일 목록 → 화면.
+// 앱 진입점: 설정 → 데이터 접근 계층 → URL 복원 → 부서원 → 작성자 식별 → 할일 목록 → 화면.
 import { configureTaskApi, taskApi } from './api/taskApi.js';
 import { reloadMembers, reloadTasks } from './state/actions.js';
+import { setView } from './state/criteria.js';
 import { getState, setState, subscribeStore } from './state/store.js';
-import { openIdentityDialog, ensureCurrentUser } from './ui/identity.js';
+import { buildSearch, parseUrlState } from './state/urlState.js';
+import { initFilterBar } from './ui/filterBar.js';
+import { ensureCurrentUser, openIdentityDialog } from './ui/identity.js';
 import { memberName } from './ui/labels.js';
 import { openTaskForm } from './ui/taskForm.js';
 import { showError } from './ui/toast.js';
+import { renderCalendarView } from './views/calendarView.js';
+import { renderKanbanView } from './views/kanbanView.js';
 import { renderListView } from './views/listView.js';
+
+const RENDERERS = { list: renderListView, kanban: renderKanbanView, calendar: renderCalendarView };
 
 async function loadConfig() {
   try {
@@ -17,23 +24,85 @@ async function loadConfig() {
   }
 }
 
+/** 새로고침·링크 공유 후에도 뷰와 필터가 유지되도록 URL에서 상태를 복원한다. */
+function restoreFromUrl() {
+  const { view, query, filters, month } = parseUrlState(location.search);
+  // 대시보드는 단계 4에서 구현되므로 그 전에는 리스트로 대체한다.
+  setState({ view: RENDERERS[view] ? view : 'list', query, filters, ...(month && { month }) });
+}
+
+function syncUrl() {
+  const search = buildSearch(getState());
+  if (search !== location.search) history.replaceState(null, '', `${location.pathname}${search}`);
+}
+
+/** WAI-ARIA 탭 패턴: 선택된 탭만 tabindex 0, 좌우 화살표·Home·End로 이동. */
+function wireTabs() {
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  const panel = document.getElementById('view-root');
+  tabs.forEach((tab) => tab.addEventListener('click', () => setView(tab.dataset.view)));
+  document.querySelector('[role="tablist"]').addEventListener('keydown', (event) => {
+    const enabled = tabs.filter((t) => !t.disabled);
+    const index = enabled.indexOf(document.activeElement);
+    const next = {
+      ArrowRight: enabled[(index + 1) % enabled.length],
+      ArrowLeft: enabled[(index - 1 + enabled.length) % enabled.length],
+      Home: enabled[0],
+      End: enabled.at(-1),
+    }[event.key];
+    if (!next || index < 0) return;
+    event.preventDefault();
+    next.focus();
+    setView(next.dataset.view);
+  });
+
+  return () => {
+    const { view } = getState();
+    for (const tab of tabs) {
+      const selected = tab.dataset.view === view;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      if (selected) {
+        tab.setAttribute('aria-current', 'page');
+        panel.setAttribute('aria-labelledby', tab.id);
+      } else {
+        tab.removeAttribute('aria-current');
+      }
+    }
+  };
+}
+
 function wireShell() {
   const viewRoot = document.getElementById('view-root');
   const userLabel = document.getElementById('current-user');
   document.getElementById('new-task').addEventListener('click', () => openTaskForm());
   document.getElementById('change-user').addEventListener('click', () => openIdentityDialog({ closable: true }));
 
-  subscribeStore(() => {
-    const { currentUser } = getState();
-    userLabel.textContent = currentUser ? memberName(currentUser) : '';
-    renderListView(viewRoot);
+  const syncTabs = wireTabs();
+  initFilterBar({
+    panel: document.getElementById('filter-panel'),
+    toggle: document.getElementById('filter-toggle'),
+    searchInput: document.getElementById('search'),
+    chips: document.getElementById('filter-chips'),
+    count: document.getElementById('result-count'),
+    content: document.getElementById('content'),
   });
-  renderListView(viewRoot);
+
+  const render = () => {
+    const { currentUser, view } = getState();
+    userLabel.textContent = currentUser ? memberName(currentUser) : '';
+    syncTabs();
+    syncUrl();
+    (RENDERERS[view] ?? renderListView)(viewRoot);
+  };
+  subscribeStore(render);
+  render();
 }
 
 async function start() {
   const config = await loadConfig();
   setState({ config });
+  restoreFromUrl();
   await configureTaskApi(config);
   wireShell();
 

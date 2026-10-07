@@ -19,7 +19,7 @@ export async function launch() {
 }
 
 /** 첫 방문 이름 입력까지 마친 페이지. */
-export async function openAsUser(browser, url, name = '김민준', viewport = { width: 1280, height: 800 }) {
+export async function openAsUser(browser, url, name = '김민준', viewport = { width: 1280, height: 800 }, search = '') {
   const context = await browser.newContext({ viewport });
   const page = await context.newPage();
   const errors = [];
@@ -30,10 +30,11 @@ export async function openAsUser(browser, url, name = '김민준', viewport = { 
     if (r.status() >= 400 && !expected.test(r.url())) errors.push(`${r.status()} ${r.url()}`);
   });
   page.on('console', (m) => m.type() === 'error' && !m.text().includes('404') && errors.push(m.text()));
-  await page.goto(`${url}/index.html`);
+  await page.goto(`${url}/index.html${search}`);
   const dialog = page.getByRole('dialog', { name: '이름을 입력하세요' });
   await dialog.getByLabel('이름').fill(name);
   await dialog.getByRole('button', { name: '확인' }).click();
-  await page.getByRole('table').waitFor();
+  await page.locator('.task-table, .kanban, .cal-grid, .empty-state').first().waitFor();
+  await page.waitForFunction(() => !document.querySelector('[aria-busy="true"]'));
   return { page, context, errors };
 }

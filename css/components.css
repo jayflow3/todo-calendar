@@ -497,3 +497,366 @@
     margin-bottom: var(--space-2);
   }
 }
+
+/* ---- 단계 3: 레이아웃·검색·필터·칸반·캘린더 ---- */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.layout__content {
+  min-width: 0;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.toolbar__search {
+  flex: 1 1 14rem;
+}
+
+.toolbar__filter-toggle {
+  display: none;
+}
+
+.toolbar__count {
+  margin: 0;
+  min-height: var(--size-touch);
+  display: flex;
+  align-items: center;
+  color: var(--color-text-muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.chips:empty {
+  display: none;
+}
+
+.chip {
+  min-height: var(--size-touch);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.chip-clear {
+  border-radius: var(--radius-pill);
+}
+
+/* 필터 패널 */
+.filter-panel {
+  display: none;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.filter-panel[data-open='true'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.filter-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filter-panel__title {
+  font-size: var(--font-size-lg);
+}
+
+.filter-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filter-group legend {
+  margin-bottom: var(--space-1);
+  padding: 0;
+  font-weight: var(--font-weight-bold);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--size-touch);
+  cursor: pointer;
+}
+
+.check input {
+  width: var(--space-5);
+  height: var(--space-5);
+  accent-color: var(--color-brand-indigo);
+}
+
+/* 칸반 */
+/* position: relative — 스크롤 영역 안의 visually-hidden(절대 위치) 요소가 문서 폭을 넓히지 않게 한다. */
+.kanban {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.kanban-col {
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.kanban-col.is-over {
+  border-color: var(--color-brand-indigo);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.kanban-col__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-base);
+}
+
+.kanban-col__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: var(--size-skeleton-row);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kanban-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-bg);
+  cursor: grab;
+}
+
+.kanban-card.is-dragging {
+  opacity: 0.5;
+}
+
+.kanban-card__meta {
+  font-size: var(--font-size-sm);
+}
+
+/* 캘린더 */
+.cal-nav {
+  justify-content: space-between;
+}
+
+.cal-title {
+  flex: 1;
+  text-align: center;
+  font-size: var(--font-size-lg);
+}
+
+.cal-grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.cal-grid th {
+  padding: var(--space-2);
+  background: var(--color-bg);
+  font-weight: var(--font-weight-bold);
+}
+
+.cal-cell {
+  height: var(--size-cal-cell-min);
+  padding: var(--space-1);
+  vertical-align: top;
+  border-top: 1px solid var(--color-border-subtle);
+  border-left: 1px solid var(--color-border-subtle);
+  cursor: pointer;
+}
+
+.cal-cell--other {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
+.cal-cell--today .cal-date {
+  background: var(--gradient-brand);
+  color: var(--color-on-brand);
+  border-radius: var(--radius-pill);
+}
+
+.cal-date {
+  min-width: var(--size-touch);
+  min-height: var(--space-6);
+  padding: 0 var(--space-2);
+  background: none;
+  border: 0;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.cal-task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  width: 100%;
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cal-task__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-task--done .cal-task__title {
+  text-decoration: line-through;
+}
+
+.cal-more {
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: none;
+  border: 0;
+  color: var(--color-brand-indigo);
+  font-weight: var(--font-weight-medium);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.cal-count {
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
+  background: var(--color-brand-indigo);
+  color: var(--color-on-brand);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+}
+
+.day-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 데스크탑(≥1024px): 좌측 필터 사이드바 */
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: var(--size-sidebar) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .filter-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .filter-panel__close {
+    display: none;
+  }
+}
+
+/* 태블릿·모바일(≤1023px): 접이식 패널 */
+@media (max-width: 1023px) {
+  .toolbar__filter-toggle {
+    display: inline-flex;
+  }
+}
+
+/* 태블릿(640~1023px): 칸반은 2~3열 가로 스크롤 */
+@media (max-width: 1023px) {
+  .kanban {
+    grid-template-columns: repeat(3, var(--size-kanban-col));
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+  }
+}
+
+/* 모바일(≤639px) */
+@media (max-width: 639px) {
+  /* 필터는 전체 화면 시트 */
+  .filter-panel[data-open='true'] {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    overflow-y: auto;
+    border-radius: 0;
+  }
+
+  /* 칸반은 열 하나씩 가로 스와이프 */
+  .kanban {
+    grid-template-columns: repeat(3, 100%);
+    scroll-snap-type: x mandatory;
+    gap: var(--space-3);
+  }
+
+  .kanban-col {
+    scroll-snap-align: start;
+  }
+
+  .cal-cell {
+    height: auto;
+    text-align: center;
+  }
+
+  .cal-date {
+    min-width: 0;
+    width: 100%;
+    padding: 0;
+  }
+
+  .cal-date[aria-pressed='true'] {
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    outline: 1px solid var(--color-brand-indigo);
+  }
+}
+
+/* 모바일에서 오늘 날짜가 선택된 칸: 흰 글씨가 연한 배경에 묻히지 않도록 그라디언트를 유지한다. */
+@media (max-width: 639px) {
+  .cal-cell--today .cal-date[aria-pressed='true'] {
+    background: var(--gradient-brand);
+    color: var(--color-on-brand);
+  }
+}
