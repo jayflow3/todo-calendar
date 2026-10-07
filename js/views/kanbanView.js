@@ -7,7 +7,7 @@ import { STATUSES } from '../domain/validation.js';
 import { changeStatus } from '../state/actions.js';
 import { getVisibleTasks } from '../state/selectors.js';
 import { getState, memberById } from '../state/store.js';
-import { h, preserveFocus } from '../ui/dom.js';
+import { captureFocus, h, renderProgressive } from '../ui/dom.js';
 import { memberName, priorityBadge, STATUS_LABEL, urgencyBadge } from '../ui/labels.js';
 import { openTaskDetail } from '../ui/taskDetail.js';
 import { remoteMark, statusSelect } from '../ui/taskParts.js';
@@ -44,24 +44,20 @@ function card(task, today) {
   );
 }
 
-function column(status, tasks, today) {
+function column(status, tasks, today, onColumnDone) {
   const headingId = `kanban-heading-${status}`;
   const shown = expanded.has(status) ? tasks : tasks.slice(0, COLUMN_LIMIT);
   const hidden = tasks.length - shown.length;
-  const body = h(
-    'ul',
-    { class: 'kanban-col__body' },
-    ...(tasks.length ? shown.map((t) => card(t, today)) : [h('li', { class: 'muted kanban-empty' }, '항목 없음')]),
-    hidden > 0 && h(
-      'li',
-      null,
-      h('button', {
-        type: 'button',
-        class: 'btn btn--secondary',
-        'data-focus-key': `kanban-more-${status}`,
-        onClick: () => { expanded.add(status); renderKanbanView(document.getElementById('view-root')); },
-      }, `${hidden}건 더 보기`),
-    ),
+  const body = h('ul', { class: 'kanban-col__body' });
+  const moreButton = hidden > 0 && h(
+    'li',
+    null,
+    h('button', {
+      type: 'button',
+      class: 'btn btn--secondary',
+      'data-focus-key': `kanban-more-${status}`,
+      onClick: () => { expanded.add(status); renderKanbanView(document.getElementById('view-root')); },
+    }, `${hidden}건 더 보기`),
   );
   const section = h(
     'section',
@@ -93,6 +89,9 @@ function column(status, tasks, today) {
     ),
     body,
   );
+  // 열마다 앞 15장을 먼저 그리고 나머지는 다음 프레임들에 붙인다.
+  if (!tasks.length) body.append(h('li', { class: 'muted kanban-empty' }, '항목 없음'));
+  else renderProgressive(body, shown, (t) => card(t, today), { first: 15, chunk: 30, onDone: () => { if (moreButton) body.append(moreButton); onColumnDone?.(); } });
   return section;
 }
 
@@ -100,9 +99,9 @@ export function renderKanbanView(root) {
   const visible = getVisibleTasks();
   const today = todayKst();
   const sorted = sortTasks(visible, { key: 'priority', dir: 'asc' }, (id) => memberById(id)?.name ?? null);
-  preserveFocus(() => {
-    root.replaceChildren(
-      h('div', { class: 'kanban' }, ...STATUSES.map((s) => column(s, sorted.filter((t) => t.status === s), today))),
-    );
-  });
+  const restoreFocus = captureFocus();
+  root.replaceChildren(
+    h('div', { class: 'kanban' }, ...STATUSES.map((s) => column(s, sorted.filter((t) => t.status === s), today, restoreFocus))),
+  );
+  restoreFocus();
 }

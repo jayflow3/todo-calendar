@@ -5,7 +5,7 @@ import { getUrgency } from '../domain/urgency.js';
 import { clearAll } from '../state/criteria.js';
 import { getVisibleTasks, hasActiveCriteria } from '../state/selectors.js';
 import { getState, memberById, setState } from '../state/store.js';
-import { h, preserveFocus } from '../ui/dom.js';
+import { captureFocus, h, renderProgressive } from '../ui/dom.js';
 import { option } from '../ui/form.js';
 import { memberName, priorityBadge, urgencyBadge } from '../ui/labels.js';
 import { remoteMark, statusSelect } from '../ui/taskParts.js';
@@ -99,7 +99,8 @@ function row(task, today) {
 export function renderListView(root) {
   const { loading, sort, page } = getState();
   const tasks = getVisibleTasks();
-  preserveFocus(() => {
+  const restoreFocus = captureFocus();
+  const draw = () => {
     if (loading) return root.replaceChildren(skeleton());
     if (!tasks.length) return root.replaceChildren(emptyState());
 
@@ -110,6 +111,7 @@ export function renderListView(root) {
     const visible = sorted.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
     const ariaSort = (key) => (sort.key === key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none');
 
+    const tbody = h('tbody');
     const table = h(
       'table',
       { class: 'task-table' },
@@ -118,7 +120,7 @@ export function renderListView(root) {
         h('th', { scope: 'col', 'aria-sort': ariaSort(c.key) },
           h('button', { type: 'button', class: 'sort-btn', 'data-focus-key': `sort-${c.key}`, onClick: () => setSort(c.key) },
             c.label, sort.key === c.key ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : ''))))),
-      h('tbody', null, ...visible.map((t) => row(t, today))),
+      tbody,
     );
 
     const pager = pages > 1 && h(
@@ -130,5 +132,9 @@ export function renderListView(root) {
     );
 
     root.replaceChildren(sortControls(sort), table, pager || '');
-  });
+    // 앞 40행을 먼저 그리고 나머지는 다음 프레임들에 붙인다. 포커스가 아직 없는 행에 있었다면 다 그린 뒤 복원한다.
+    renderProgressive(tbody, visible, (t) => row(t, today), { first: 40, chunk: 40, onDone: restoreFocus });
+  };
+  draw();
+  restoreFocus();
 }

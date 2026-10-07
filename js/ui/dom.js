@@ -50,11 +50,54 @@ export function clear(el) {
   return el;
 }
 
+/**
+ * 다시 그리기 전에 포커스 위치(data-focus-key)를 기억하고, 호출하면 그 요소로 포커스를 되돌리는 함수를 돌려준다.
+ * 포커스가 body로 빠진 경우에만 되돌린다(그 사이 사용자가 다른 곳으로 옮겼다면 건드리지 않는다).
+ */
+export function captureFocus() {
+  const key = document.activeElement?.dataset?.focusKey;
+  return () => {
+    if (!key) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active.dataset?.focusKey !== key && active.isConnected) return;
+    document.querySelector(`[data-focus-key="${CSS.escape(key)}"]`)?.focus();
+  };
+}
+
 /** 다시 그리기 전후로 포커스를 유지한다. 포커스 대상 요소에는 data-focus-key를 붙인다. */
 export function preserveFocus(render) {
-  const key = document.activeElement?.dataset?.focusKey;
+  const restore = captureFocus();
   render();
-  if (key) document.querySelector(`[data-focus-key="${CSS.escape(key)}"]`)?.focus();
+  restore();
+}
+
+const progressiveTokens = new WeakMap();
+
+/**
+ * 항목이 많을 때 앞부분을 먼저 그려 화면에 빨리 보이고, 나머지는 다음 프레임들에 나눠 붙인다(1,000건에서도 반응성 유지).
+ * 같은 container에 다시 호출하면 이전 작업은 중단된다. build(item)은 노드를 돌려준다.
+ */
+export function renderProgressive(container, items, build, { first = 40, chunk = 40, onDone } = {}) {
+  const token = Symbol('render');
+  progressiveTokens.set(container, token);
+  container.replaceChildren();
+  let index = 0;
+  const appendNext = (count) => {
+    const fragment = document.createDocumentFragment();
+    const end = Math.min(items.length, index + count);
+    for (; index < end; index += 1) fragment.append(build(items[index]));
+    container.append(fragment);
+  };
+  const frame = () => {
+    if (progressiveTokens.get(container) !== token || !container.isConnected) return; // 새로 그려졌거나 화면에서 사라짐
+    if (index >= items.length) return onDone?.();
+    appendNext(chunk);
+    requestAnimationFrame(frame);
+  };
+  appendNext(first);
+  if (index >= items.length) onDone?.();
+  // 첫 조각이 먼저 화면에 그려지도록, 다음 조각은 그 페인트가 끝난 뒤(다음 프레임의 매크로태스크)부터 시작한다.
+  else requestAnimationFrame(() => setTimeout(frame, 0));
 }
 
 let counter = 0;

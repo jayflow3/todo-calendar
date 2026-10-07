@@ -150,16 +150,16 @@ describe('단계 2 스모크', () => {
     await page.getByRole('table').waitFor();
 
     // 「새 할일」 버튼까지 Tab 이동
-    async function tabTo(predicate, max = 60) {
+    async function tabTo(predicate, { back = false, max = 200 } = {}) {
       for (let i = 0; i < max; i++) {
-        await kb.press('Tab');
+        await kb.press(back ? 'Shift+Tab' : 'Tab');
         if (await page.evaluate(predicate)) return;
       }
       throw new Error('Tab 이동으로 대상에 도달하지 못했습니다');
     }
+    // main에서 거꾸로 Shift+Tab: 헤더의 「새 할일」은 main 바로 앞쪽에 있어 목록 길이와 상관없이 가깝다.
     await page.evaluate(() => document.getElementById('main').focus());
-    await kb.press('Shift+Tab');
-    await tabTo(() => document.activeElement?.id === 'new-task'); // 이미 지나쳤다면 순환
+    await tabTo(() => document.activeElement?.id === 'new-task', { back: true });
     await kb.press('Enter');
 
     // 폼: 제목 자동 포커스

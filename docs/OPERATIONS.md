@@ -18,6 +18,8 @@
    select tablename from pg_publication_tables where pubname = 'supabase_realtime';
    ```
 
+5. (선택, **테스트용 프로젝트에서만**) 화면을 시험해 보려면 [supabase/seed.sql](../supabase/seed.sql)을 SQL Editor에서 실행합니다. 부서원 6명·할일 20건·댓글 4건이 들어가며, 이미 할일이 있으면 아무것도 넣지 않습니다.
+
 ## 2. 설정 파일 `js/config.js`
 
 1. `js/config.example.js`를 `js/config.js`로 복사합니다(`js/config.js`는 git에 올리지 않습니다).
@@ -119,7 +121,13 @@ anon key는 번들에 들어 있어 누구나 볼 수 있으므로, 부서 밖�
 
 ## 9. RLS 점검 (배포 전·정책 변경 후)
 
-anon key로 허용되지 않은 동작이 거부되는지 직접 확인합니다. `$URL`, `$ANON`은 프로젝트 값입니다.
+**자동 점검(권장):** 저장소에서 아래를 실행하면 제약·트리거·RLS(DELETE 거부 등)와 실제 supabase 어댑터(등록·수정·동시 편집 충돌·소프트 삭제)를 한 번에 확인합니다. 테스트가 만든 데이터는 소프트 삭제만 가능해 남으므로 **테스트용 프로젝트**에서 실행하세요.
+
+```bash
+SUPABASE_URL=https://<ref>.supabase.co SUPABASE_REST_URL=https://<ref>.supabase.co/rest/v1 SUPABASE_ANON_KEY=<anon key> npm run test:db
+```
+
+**수동 점검:** anon key로 허용되지 않은 동작이 거부되는지 직접 확인합니다. `$URL`, `$ANON`은 프로젝트 값입니다.
 
 ```bash
 H=(-H "apikey: $ANON" -H "Authorization: Bearer $ANON")

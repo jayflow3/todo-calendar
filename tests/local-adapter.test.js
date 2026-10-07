@@ -25,9 +25,13 @@ async function setup() {
   return { adapter, me };
 }
 
-test('첫 실행 시 샘플 12건과 부서원 6명을 넣는다', async () => {
+test('첫 실행 시 샘플 할일 20건·댓글 4건과 부서원 6명을 넣는다', async () => {
   const { adapter } = await setup();
-  assert.equal((await adapter.listTasks()).length, 12);
+  const tasks = await adapter.listTasks();
+  assert.equal(tasks.length, 20);
+  assert.equal((await adapter.listComments(tasks.find((t) => t.title === '분기 업무 계획서 작성').id)).length, 2);
+  // 상태가 골고루 섞여 있어야 칸반·대시보드를 시험할 수 있다.
+  for (const status of ['todo', 'in_progress', 'done']) assert.ok(tasks.some((t) => t.status === status), status);
   assert.equal((await adapter.listMembers()).length, 6);
 });
 

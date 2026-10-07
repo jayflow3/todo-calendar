@@ -14,7 +14,7 @@ Node.js 22 이상이 필요합니다(개발 서버·단위 테스트용).
 npm start            # http://localhost:8080 에서 열기 (포트는 npm start -- 3000)
 ```
 
-`js/config.js`가 없으면 **local 어댑터**(브라우저 localStorage)로 동작하고, 첫 실행에 샘플 할일 12건과 부서원 6명이 들어갑니다. 팀 공유는 되지 않으므로 화면·기능을 써 보는 용도입니다. 같은 브라우저의 다른 탭에서는 변경이 실시간으로 반영되어 동시 편집도 흉내 낼 수 있습니다.
+`js/config.js`가 없으면 **local 어댑터**(브라우저 localStorage)로 동작하고, 첫 실행에 **샘플 할일 20건·댓글 4건·부서원 6명**이 들어갑니다(마감일은 오늘 기준이라 임박·지연 배지와 캘린더를 바로 볼 수 있습니다). 샘플을 처음 상태로 되돌리려면 브라우저 개발자 도구에서 이 사이트의 localStorage를 지우세요. 팀 공유는 되지 않으므로 화면·기능을 써 보는 용도입니다. 같은 브라우저의 다른 탭에서는 변경이 실시간으로 반영되어 동시 편집도 흉내 낼 수 있습니다.
 
 ## 팀이 함께 쓰기 (Supabase)
 
@@ -50,7 +50,9 @@ docs/               OPERATIONS · KNOWN_LIMITS · BROWSERS · TEST_REPORT
 
 ```bash
 npm test             # 단위·정적 점검(node --test): 도메인 로직, 명도 대비, RLS, 보안 규칙, 호환 문법
-npm run test:e2e     # 브라우저 시나리오(Playwright): 기능, 접근성(axe), 반응형, CSP, 성능
+npm run test:e2e     # 브라우저 시나리오(Playwright): 기능, 접근성(axe), 반응형, CSP
+npm run test:perf    # 1,000건 성능 측정(다른 작업 없이 따로 실행)
+npm run test:db      # DB 계약·실제 supabase 어댑터(SUPABASE_URL 등 환경변수가 없으면 건너뜀)
 ```
 
 e2e는 `playwright-core`만 설치하고 **PC에 설치된 Microsoft Edge**를 씁니다(브라우저를 따로 내려받지 않습니다). 특정 파일만 돌리려면 `node --test tests/e2e/stage4.e2e.js`처럼 지정하고, 스크린샷을 저장하려면 `SHOT_DIR=<폴더>`를 줍니다. 실행 결과와 아직 검증하지 못한 항목은 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)에 정리했습니다.

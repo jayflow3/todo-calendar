@@ -52,7 +52,7 @@ async function openEdit(page, title) {
 async function addRawTasks(page, count, over = {}) {
   await page.evaluate(
     ({ count, over }) => {
-      const key = 'todo.local.db.v1';
+      const key = 'todo.local.db.v2';
       const db = JSON.parse(localStorage.getItem(key));
       const names = over.assigneeName ? db.members.filter((m) => m.name === over.assigneeName) : [];
       const now = new Date().toISOString();
@@ -255,6 +255,24 @@ describe('단계 4: 실시간 반영과 충돌 처리(두 사용자)', () => {
     assert.equal(await row.locator('select').inputValue(), 'done');
     await a.locator('.toast', { hasText: '이서연님이 상태를 완료로 변경했습니다' }).waitFor();
     console.log(`  · 실시간 반영 시간: ${elapsed}ms`);
+    await context.close();
+  });
+
+  test('(회귀) 다른 사람이 새로 등록한 부서원의 이름이 열려 있던 화면에도 표시된다(담당자가 「미배정」으로 보이지 않는다)', async () => {
+    const { page: a, context } = await openAsUser(browser, server.url, '김민준');
+    const newcomer = `신입${Date.now().toString(36)}`;
+    const b = await openSecondUser(context, server.url, newcomer); // 새 이름 → 부서원으로 등록된다
+    // A는 이 부서원을 모른 채 열려 있다. B가 자신을 담당자로 지정해 저장한다.
+    const { edit } = await openEdit(b, '성능 측정 스크립트');
+    await edit.getByLabel('담당자').selectOption({ label: newcomer });
+    await edit.getByRole('button', { name: '저장' }).click();
+    await edit.waitFor({ state: 'detached' });
+
+    const row = a.getByRole('row').filter({ hasText: '성능 측정 스크립트' });
+    await row.locator('.remote-mark', { hasText: `${newcomer}님이 수정함` }).waitFor({ timeout: 5000 });
+    assert.match(await row.textContent(), new RegExp(newcomer), '담당자 칸에 이름이 보여야 한다');
+    assert.doesNotMatch(await row.textContent(), /미배정/);
+    await a.locator('.toast', { hasText: `${newcomer}님이 담당자를 ${newcomer}` }).waitFor();
     await context.close();
   });
 

@@ -5,7 +5,7 @@ import { validateComment, validateMember, validateTask } from '../../domain/vali
 import { ApiError } from '../errors.js';
 import { buildSeed } from './seed.js';
 
-const STORAGE_KEY = 'todo.local.db.v1';
+const STORAGE_KEY = 'todo.local.db.v2';
 const TASK_WRITABLE = [
   'title', 'description', 'status', 'priority', 'assignee_id',
   'category', 'due_date', 'updated_by', 'deleted_at',

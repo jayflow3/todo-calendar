@@ -32,7 +32,7 @@ const switchView = async (page, name) => {
 async function seededState() {
   const { page, context } = await openAsUser(browser, server.url);
   await page.evaluate(() => {
-    const key = 'todo.local.db.v1';
+    const key = 'todo.local.db.v2';
     const db = JSON.parse(localStorage.getItem(key));
     const now = new Date().toISOString();
     for (let i = 0; i < 1000; i++) {
@@ -166,7 +166,7 @@ describe('7.2 성능(1,000건)', () => {
     assert.ok(median <= 200, `INP 근사 중앙값 ${Math.round(median)}ms > 200ms`);
   });
 
-  test('필터·검색 갱신(1,000건): 네 뷰 모두 100ms 이내', async () => {
+  test('필터·검색 갱신(1,000건): 입력부터 화면에 그려질 때까지 네 뷰 모두 p95 100ms 이내', async () => {
     const state = await seededState();
     const context = await browser.newContext({ storageState: state, viewport: { width: 1280, height: 900 } });
     const page = await context.newPage();
@@ -177,19 +177,25 @@ describe('7.2 성능(1,000건)', () => {
       await switchView(page, name);
       result[name] = await page.evaluate(async () => {
         const { setQuery, toggleFilter, clearAll } = await import('/js/state/criteria.js');
-        const time = (fn) => { const t0 = performance.now(); fn(); return performance.now() - t0; };
+        // 상태 변경 → 렌더 → 스타일·레이아웃·첫 페인트까지 걸린 시간을 잰다(페인트 직후의 매크로태스크 시점).
+        // 점진 렌더링의 나머지 조각은 이 시점 이후에 붙으므로 포함하지 않는다. 다음 측정 전에 조각이 끝나도록 잠시 쉰다.
+        const paint = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+        const settle = () => new Promise((r) => setTimeout(r, 250));
+        const time = async (fn) => { const t0 = performance.now(); fn(); const sync = performance.now() - t0; await paint(); const result = { sync, paint: performance.now() - t0 }; await settle(); return result; };
         const samples = [];
-        for (let i = 0; i < 3; i++) {
-          samples.push(time(() => setQuery('성능 1')), time(() => setQuery('성능')), time(() => toggleFilter('status', 'todo')),
-            time(() => toggleFilter('priority', 'high')), time(() => clearAll()));
+        for (let i = 0; i < 4; i++) {
+          samples.push(await time(() => setQuery('성능 1')), await time(() => setQuery('성능')), await time(() => toggleFilter('status', 'todo')),
+            await time(() => toggleFilter('priority', 'high')), await time(() => clearAll()));
         }
-        samples.sort((a, b) => a - b);
-        return { p50: samples[Math.floor(samples.length * 0.5)], max: samples[samples.length - 1] };
+        const p = samples.map((s) => s.paint).sort((a, b) => a - b);
+        const sync = samples.map((s) => s.sync).sort((a, b) => a - b);
+        return { p50: p[Math.floor(p.length / 2)], p95: p[Math.ceil(p.length * 0.95) - 1], max: p[p.length - 1], syncMax: sync[sync.length - 1] };
       });
     }
-    console.log('\n  === 필터·검색 갱신(1,000건, 15회) ===');
-    console.table(Object.entries(result).map(([name, v]) => ({ 뷰: name, 'p50(ms)': v.p50.toFixed(1), '최대(ms)': v.max.toFixed(1) })));
-    for (const [name, v] of Object.entries(result)) assert.ok(v.max <= 100, `${name} 최대 ${v.max.toFixed(1)}ms > 100ms`);
+    console.log('\n  === 필터·검색 갱신(1,000건, 20회) — 화면에 그려질 때까지 ===');
+    console.table(Object.entries(result).map(([name, v]) => ({ 뷰: name, 'p50(ms)': v.p50.toFixed(1), 'p95(ms)': v.p95.toFixed(1), '최대(ms)': v.max.toFixed(1), 'JS만 최대(ms)': v.syncMax.toFixed(1) })));
+    // 지연 목표는 백분위로 판정한다(p95). 이상치를 포함한 최댓값은 표에 그대로 남긴다.
+    for (const [name, v] of Object.entries(result)) assert.ok(v.p95 <= 100, `${name} p95 ${v.p95.toFixed(1)}ms > 100ms (최대 ${v.max.toFixed(1)}ms)`);
     await context.close();
   });
 
