@@ -7,8 +7,8 @@
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-pill);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  line-height: 1;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
   white-space: nowrap;
 }
 
@@ -34,15 +34,22 @@
   padding: var(--space-2) var(--space-4);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: box-shadow var(--duration-base) var(--ease-standard),
-    transform var(--duration-base) var(--ease-standard);
+    transform var(--duration-base) var(--ease-standard),
+    background var(--duration-base) var(--ease-standard),
+    filter var(--duration-base) var(--ease-standard);
 }
 
 .btn--primary {
   background: var(--gradient-brand);
   color: var(--color-on-brand);
+  box-shadow: var(--shadow-brand);
+}
+
+.btn--primary:hover {
+  filter: brightness(1.1);
 }
 
 .btn--secondary {
@@ -51,8 +58,22 @@
   border-color: var(--color-border-strong);
 }
 
-.btn:hover {
+.btn--secondary:hover {
+  background: var(--color-surface-sunken);
   box-shadow: var(--shadow-card-hover);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text);
+}
+
+.btn--ghost:hover {
+  background: var(--color-surface-sunken);
+}
+
+.btn:active {
+  transform: translateY(1px);
 }
 
 .btn[disabled] {
@@ -64,15 +85,18 @@
 .card {
   padding: var(--space-4);
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
   transition: box-shadow var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
     transform var(--duration-base) var(--ease-standard);
 }
 
 .card:hover {
+  border-color: var(--color-border-strong);
   box-shadow: var(--shadow-card-hover);
-  transform: translateY(calc(var(--space-1) * -0.5));
+  transform: translateY(-1px);
 }
 
 /* 입력 */
@@ -91,7 +115,14 @@
   padding: var(--space-2) var(--space-3);
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.field__input:focus {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
 }
 
 .field__error {
@@ -119,10 +150,17 @@
   gap: var(--space-3);
 }
 
+/* 밝은 반투명 헤더: 스크롤해도 위에 붙어 있고, 색은 로고·주요 버튼·선택 탭에만 쓴다(PRD 8.1). */
 .app-header {
-  padding: var(--space-4);
-  background: var(--gradient-brand);
-  color: var(--color-on-brand);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: var(--space-3) var(--space-4) 0;
+  background: var(--color-header-bg);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border-subtle);
+  -webkit-backdrop-filter: saturate(1.4) blur(var(--space-3));
+  backdrop-filter: saturate(1.4) blur(var(--space-3));
 }
 
 /* ---- 단계 2: 앱 셸·리스트·대화상자 ---- */
@@ -152,8 +190,24 @@
 }
 
 .app-header__inner h1 {
+  display: flex;
   flex: 1 1 auto;
+  align-items: center;
+  gap: var(--space-2);
   font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+/* 장식용 로고 마크(스크린 리더에는 읽히지 않는다). */
+.app-header__inner h1::before {
+  content: '';
+  flex: none;
+  width: var(--space-5);
+  height: var(--space-5);
+  background: var(--gradient-brand);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-brand);
 }
 
 .app-header__user {
@@ -162,24 +216,23 @@
   gap: var(--space-2);
 }
 
-/* 좁은 화면: 이름이 채워지기 전(빈 칸)과 후에 줄바꿈이 달라져 헤더 아래가 밀리지 않도록, 사용자 영역을 항상 한 줄로 차지한다. */
+/* 좁은 화면: 이름이 채워지기 전(빈 칸)과 후에 줄바꿈이 달라져 헤더 아래가 밀리지 않도록, 사용자 영역을 항상 한 줄로 차지한다.
+   헤더가 여러 줄이라 위에 고정하면 화면을 너무 가리므로 고정은 넓은 화면에서만 한다. */
 @media (max-width: 639px) {
+  .app-header {
+    position: static;
+  }
+
   .app-header__user {
     flex: 1 0 100%;
   }
-}
-
-.btn--ghost-on-brand {
-  background: transparent;
-  color: var(--color-on-brand);
-  border-color: var(--color-on-brand);
 }
 
 .view-tabs {
   display: flex;
   gap: var(--space-1);
   max-width: var(--size-content-max);
-  margin: var(--space-3) auto 0;
+  margin: var(--space-2) auto 0;
   padding: 0;
   list-style: none;
   overflow-x: auto;
@@ -189,26 +242,27 @@
   min-height: var(--size-touch);
   padding: var(--space-2) var(--space-4);
   background: transparent;
-  color: var(--color-on-brand);
+  color: var(--color-text-muted);
   border: 0;
   border-bottom: var(--focus-ring-width) solid transparent;
   font-weight: var(--font-weight-medium);
   cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.view-tab:hover {
+  color: var(--color-text);
 }
 
 .view-tab[aria-current='page'] {
-  border-bottom-color: var(--color-on-brand);
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
   font-weight: var(--font-weight-bold);
 }
 
 .view-tab[disabled] {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-/* 포커스 링이 그라디언트 위에서도 보이도록 헤더 안에서는 밝은 색을 쓴다. */
-.app-header :focus-visible {
-  outline-color: var(--color-on-brand);
 }
 
 .connection-status:empty {
@@ -221,7 +275,7 @@
 
 .notice {
   padding: var(--space-3);
-  background: var(--color-bg);
+  background: var(--color-surface-sunken);
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
 }
@@ -238,12 +292,25 @@
   padding: 0;
   background: none;
   border: 0;
-  color: var(--color-accent);
-  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-tight);
   text-align: left;
   text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: var(--focus-ring-width);
+  text-underline-offset: 0.25em;
   cursor: pointer;
   overflow-wrap: anywhere;
+  transition: color var(--duration-fast) var(--ease-standard),
+    text-decoration-color var(--duration-fast) var(--ease-standard);
+}
+
+/* 눌러서 열 수 있다는 단서: 짙은 굵은 글씨, 마우스를 올리거나 포커스하면 강조색과 밑줄이 나타난다(행 전체에도 호버 배경이 있다). */
+.link-btn:hover,
+.link-btn:focus-visible {
+  color: var(--color-accent);
+  text-decoration-color: currentColor;
 }
 
 /* 폼 */
@@ -285,7 +352,7 @@
   padding: 0;
   background: var(--color-surface);
   color: var(--color-text);
-  border: 0;
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-dialog);
   overflow: auto;
@@ -297,6 +364,8 @@
 
 .dialog::backdrop {
   background: var(--color-overlay);
+  -webkit-backdrop-filter: blur(var(--space-1));
+  backdrop-filter: blur(var(--space-1));
 }
 
 .dialog__body {
@@ -305,6 +374,7 @@
 
 .dialog__title {
   font-size: var(--font-size-lg);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .dialog__actions {
@@ -344,7 +414,7 @@
 
 .comment {
   padding: var(--space-3);
-  background: var(--color-bg);
+  background: var(--color-surface-sunken);
   border-radius: var(--radius-sm);
 }
 
@@ -359,8 +429,11 @@
   border-collapse: separate;
   border-spacing: 0;
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
 }
 
 .task-table th,
@@ -371,16 +444,32 @@
   border-bottom: 1px solid var(--color-border-subtle);
 }
 
+.task-table th {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.task-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
 .sort-btn {
   padding: 0;
   background: none;
   border: 0;
-  font-weight: var(--font-weight-bold);
+  color: inherit;
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
+}
+
+.sort-btn:hover {
+  color: var(--color-text);
 }
 
 .task-row {
   cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard);
 }
 
 .task-row:hover {
@@ -469,7 +558,9 @@
 
   .task-table {
     background: none;
+    border: 0;
     box-shadow: none;
+    overflow: visible;
   }
 
   .task-table thead {
@@ -480,7 +571,8 @@
     margin-bottom: var(--space-3);
     padding: var(--space-3);
     background: var(--color-surface);
-    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-card);
   }
 
@@ -565,6 +657,11 @@
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-pill);
   cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.chip:hover {
+  background: var(--color-surface-sunken);
 }
 
 .chip-clear {
@@ -576,7 +673,8 @@
   display: none;
   padding: var(--space-4);
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
 }
 
@@ -594,6 +692,7 @@
 
 .filter-panel__title {
   font-size: var(--font-size-lg);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .filter-group {
@@ -605,7 +704,9 @@
 .filter-group legend {
   margin-bottom: var(--space-1);
   padding: 0;
-  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .check {
@@ -634,7 +735,7 @@
 
 .kanban-col {
   padding: var(--space-3);
-  background: var(--color-surface);
+  background: var(--color-surface-sunken);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg);
 }
@@ -650,6 +751,7 @@
   gap: var(--space-2);
   margin-bottom: var(--space-3);
   font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
 }
 
 .kanban-col__body {
@@ -666,7 +768,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  background: var(--color-bg);
+  background: var(--color-surface);
   cursor: grab;
 }
 
@@ -687,6 +789,7 @@
   flex: 1;
   text-align: center;
   font-size: var(--font-size-lg);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .cal-grid {
@@ -695,15 +798,18 @@
   border-collapse: separate;
   border-spacing: 0;
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
 .cal-grid th {
   padding: var(--space-2);
-  background: var(--color-bg);
-  font-weight: var(--font-weight-bold);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .cal-cell {
@@ -716,7 +822,7 @@
 }
 
 .cal-cell--other {
-  background: var(--color-bg);
+  background: var(--color-surface-sunken);
   color: var(--color-text-muted);
 }
 
@@ -744,12 +850,17 @@
   width: 100%;
   margin-top: var(--space-1);
   padding: var(--space-1) var(--space-2);
-  background: var(--color-bg);
+  background: var(--color-surface);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   text-align: left;
   cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-standard);
+}
+
+.cal-task:hover {
+  border-color: var(--color-border-strong);
 }
 
 .cal-task__title {
@@ -768,9 +879,16 @@
   background: none;
   border: 0;
   color: var(--color-accent);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
   text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: var(--focus-ring-width);
+  text-underline-offset: 0.25em;
   cursor: pointer;
+}
+
+.cal-more:hover {
+  text-decoration-color: currentColor;
 }
 
 .cal-date[data-count]::after {
@@ -880,6 +998,7 @@
 
 .section-title {
   font-size: var(--font-size-lg);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .metric-grid {
@@ -909,11 +1028,16 @@
 
 .metric__label {
   color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .metric__value {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.2;
 }
 
 .metric__note {

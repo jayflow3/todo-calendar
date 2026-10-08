@@ -6,20 +6,22 @@
   --color-brand-violet: #7c3aed;
   --color-brand-indigo: #4f46e5;
   --gradient-brand: linear-gradient(135deg, var(--color-brand-violet), var(--color-brand-indigo));
-  --color-bg: #f5f3ff;
+  --color-bg: #f6f6fb;
   --color-surface: #ffffff;
-  --color-text: #1e1b4b;
-  --color-text-muted: #475569;
+  --color-surface-sunken: #eeeef6;
+  --color-header-bg: rgba(255, 255, 255, 0.82);
+  --color-text: #17152f;
+  --color-text-muted: #4f4e66;
   --color-on-brand: #ffffff;
-  --color-border-strong: #64748b;
-  --color-border-subtle: #e2e8f0;
+  --color-border-strong: #6b6a82;
+  --color-border-subtle: #e4e4ef;
   --color-focus-ring: #4f46e5;
   --color-accent: #4f46e5;
   --color-toast-bg: #1e1b4b;
   --color-toast-fg: #ffffff;
   --color-error: #b91c1c;
-  --color-overlay: rgba(30, 27, 75, 0.5);
-  --color-skeleton: #e2e8f0;
+  --color-overlay: rgba(23, 21, 47, 0.45);
+  --color-skeleton: #e4e4ef;
 
   /* 상태 배지 (fg / bg) */
   --badge-status-todo-fg: #334155;
@@ -60,9 +62,11 @@
   --radius-pill: 999px;
 
   /* 그림자 */
-  --shadow-card: 0 1px 2px rgba(30, 27, 75, 0.06), 0 4px 12px rgba(79, 70, 229, 0.08);
-  --shadow-card-hover: 0 2px 4px rgba(30, 27, 75, 0.08), 0 8px 20px rgba(79, 70, 229, 0.14);
-  --shadow-dialog: 0 12px 40px rgba(30, 27, 75, 0.25);
+  --shadow-card: 0 1px 2px rgba(23, 21, 47, 0.05);
+  --shadow-card-hover: 0 1px 2px rgba(23, 21, 47, 0.06), 0 6px 16px rgba(23, 21, 47, 0.08);
+  --shadow-brand: 0 1px 2px rgba(79, 70, 229, 0.3), 0 4px 12px rgba(79, 70, 229, 0.22);
+  --shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.18);
+  --shadow-dialog: 0 24px 64px rgba(23, 21, 47, 0.24);
 
   /* 모션 */
   --duration-fast: 120ms;
@@ -93,30 +97,35 @@
   --font-size-sm: 0.8125rem;
   --font-size-base: 1rem;
   --font-size-lg: 1.25rem;
+  --font-size-xl: 2rem;
   --font-weight-medium: 500;
+  --font-weight-semibold: 600;
   --font-weight-bold: 700;
   --line-height-base: 1.5;
+  --letter-spacing-tight: -0.015em;
 }
 
 /* 다크 테마: 색 토큰만 덮어쓴다. 켜는 방법은 <html data-theme="dark">(js/theme.js, 선택값은 localStorage). 맨 아래에 두어야 한다(tools/contrast.mjs가 이 블록부터를 다크로 읽는다). */
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --color-brand-violet: #5b21b6;
-  --color-brand-indigo: #3730a3;
-  --color-bg: #0f0d1f;
-  --color-surface: #1b1836;
-  --color-text: #ede9fe;
-  --color-text-muted: #b6bccb;
-  --color-border-strong: #94a3b8;
-  --color-border-subtle: #332f58;
+  --color-brand-violet: #6d28d9;
+  --color-brand-indigo: #4338ca;
+  --color-bg: #0b0b13;
+  --color-surface: #14141f;
+  --color-surface-sunken: #0f0f18;
+  --color-header-bg: rgba(11, 11, 19, 0.82);
+  --color-text: #ececf6;
+  --color-text-muted: #a6a8bd;
+  --color-border-strong: #8b8da6;
+  --color-border-subtle: #262638;
   --color-focus-ring: #a5b4fc;
   --color-accent: #a5b4fc;
-  --color-toast-bg: #ede9fe;
+  --color-toast-bg: #ececf6;
   --color-toast-fg: #1e1b4b;
   --color-error: #fca5a5;
   --color-overlay: rgba(0, 0, 0, 0.65);
-  --color-skeleton: #2e2a52;
+  --color-skeleton: #262638;
 
   --badge-status-todo-fg: #e2e8f0;
   --badge-status-todo-bg: #334155;
@@ -135,7 +144,9 @@
   --badge-urgent-soon-fg: #fed7aa;
   --badge-urgent-soon-bg: #7c2d12;
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.4);
-  --shadow-dialog: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.45);
+  --shadow-brand: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 14px rgba(109, 40, 217, 0.35);
+  --shadow-focus: 0 0 0 3px rgba(165, 180, 252, 0.25);
+  --shadow-dialog: 0 24px 64px rgba(0, 0, 0, 0.7);
 }
