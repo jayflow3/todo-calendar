@@ -65,7 +65,7 @@
 
 .btn--ghost {
   background: transparent;
-  color: var(--color-accent);
+  color: var(--color-text);
 }
 
 .btn--ghost:hover {
@@ -242,17 +242,17 @@
   min-height: var(--size-touch);
   padding: var(--space-2) var(--space-4);
   background: transparent;
-  color: var(--color-accent);
+  color: var(--color-text-muted);
   border: 0;
   border-bottom: var(--focus-ring-width) solid transparent;
   font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: border-color var(--duration-fast) var(--ease-standard);
+  transition: color var(--duration-fast) var(--ease-standard);
 }
 
-/* 선택할 수 있는 탭은 강조색, 선택된 탭은 짙은 글씨+밑줄로 구분한다. */
+/* 상단 메뉴(탭)는 누르는 곳이라는 게 구조로 분명하므로 강조색을 쓰지 않는다: 선택 안 한 탭은 보조색, 선택된 탭은 짙은 글씨+밑줄. */
 .view-tab:hover {
-  border-bottom-color: var(--color-border-strong);
+  color: var(--color-text);
 }
 
 .view-tab[aria-current='page'] {
@@ -307,7 +307,7 @@
     text-decoration-color var(--duration-fast) var(--ease-standard);
 }
 
-/* 눌러서 열 수 있는 글자(제목 링크·정렬 버튼·고스트 버튼·캘린더 일정)는 본문과 다른 강조색으로 표시한다. 마우스를 올리거나 포커스하면 밑줄도 나타난다. */
+/* 페이지 안에서 눌러서 동작하는 글자(제목 링크·정렬 버튼·캘린더 일정·「+N개」)는 내용처럼 보이지 않게 본문과 다른 강조색으로 표시한다. 마우스를 올리거나 포커스하면 밑줄도 나타난다. 상단 메뉴·헤더 버튼은 해당하지 않는다. */
 .link-btn:hover,
 .link-btn:focus-visible {
   text-decoration-color: currentColor;
