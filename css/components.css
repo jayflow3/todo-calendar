@@ -65,7 +65,7 @@
 
 .btn--ghost {
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-accent);
 }
 
 .btn--ghost:hover {
@@ -242,16 +242,17 @@
   min-height: var(--size-touch);
   padding: var(--space-2) var(--space-4);
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--color-accent);
   border: 0;
   border-bottom: var(--focus-ring-width) solid transparent;
   font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: color var(--duration-fast) var(--ease-standard);
+  transition: border-color var(--duration-fast) var(--ease-standard);
 }
 
+/* 선택할 수 있는 탭은 강조색, 선택된 탭은 짙은 글씨+밑줄로 구분한다. */
 .view-tab:hover {
-  color: var(--color-text);
+  border-bottom-color: var(--color-border-strong);
 }
 
 .view-tab[aria-current='page'] {
@@ -292,7 +293,7 @@
   padding: 0;
   background: none;
   border: 0;
-  color: var(--color-text);
+  color: var(--color-accent);
   font-weight: var(--font-weight-semibold);
   letter-spacing: var(--letter-spacing-tight);
   text-align: left;
@@ -306,10 +307,9 @@
     text-decoration-color var(--duration-fast) var(--ease-standard);
 }
 
-/* 눌러서 열 수 있다는 단서: 짙은 굵은 글씨, 마우스를 올리거나 포커스하면 강조색과 밑줄이 나타난다(행 전체에도 호버 배경이 있다). */
+/* 눌러서 열 수 있는 글자(제목 링크·정렬 버튼·고스트 버튼·캘린더 일정)는 본문과 다른 강조색으로 표시한다. 마우스를 올리거나 포커스하면 밑줄도 나타난다. */
 .link-btn:hover,
 .link-btn:focus-visible {
-  color: var(--color-accent);
   text-decoration-color: currentColor;
 }
 
@@ -458,13 +458,17 @@
   padding: 0;
   background: none;
   border: 0;
-  color: inherit;
+  color: var(--color-accent);
   font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: var(--focus-ring-width);
+  text-underline-offset: 0.25em;
   cursor: pointer;
 }
 
 .sort-btn:hover {
-  color: var(--color-text);
+  text-decoration-color: currentColor;
 }
 
 .task-row {
@@ -853,7 +857,9 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
+  color: var(--color-accent);
   font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   text-align: left;
   cursor: pointer;
   transition: border-color var(--duration-fast) var(--ease-standard);
