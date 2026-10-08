@@ -22,7 +22,8 @@ function walk(dir, exts, skip = ['vendor', 'node_modules', '.git']) {
 /** 줄 주석(//...)과 블록 주석을 지운 코드. 설명 문구가 규칙 위반으로 잡히지 않게 한다. */
 const stripComments = (code) => code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`])\/\/.*$/gm, '$1');
 
-const appJs = ['js', 'tools'].flatMap((d) => walk(d, ['.js', '.mjs']));
+// js/config.js는 git에 올리지 않는 개인 설정(anon key·DB 주소)이라 점검에서 뺀다. 커밋되는 config.example.js는 그대로 점검한다.
+const appJs = ['js', 'tools'].flatMap((d) => walk(d, ['.js', '.mjs'])).filter((f) => f !== join('js', 'config.js'));
 const appFiles = [...appJs, ...walk('css', ['.css']), 'index.html', 'dev.html'];
 
 // ---------------------------------------------------------------- 명도 대비

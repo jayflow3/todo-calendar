@@ -6,7 +6,7 @@
 
 1. 회사 보안·개인정보 정책상 외부 SaaS DB를 써도 되는지, 데이터 저장 리전이 맞는지 먼저 확인합니다(PRD Q1). 불가하면 사내 서버 DB + 작은 API로 대체해야 하며 `js/api/taskApi.js` 뒤의 어댑터만 바꾸면 화면은 그대로입니다.
 2. supabase.com에서 새 프로젝트를 만듭니다(리전: 서울 `ap-northeast-2` 권장). 무료 플랜은 활동이 없으면 일시정지될 수 있으므로(PRD Q2) 상시 운영이면 유료 플랜을 권장합니다.
-3. 대시보드 **SQL Editor**에 [supabase/migrations/0001_init.sql](../supabase/migrations/0001_init.sql) 전체를 붙여 넣고 실행합니다. (Supabase CLI를 쓴다면 `supabase db push`.)
+3. 대시보드 **SQL Editor**에 [supabase/migrations/0001_init.sql](../supabase/migrations/0001_init.sql) 전체를 붙여 넣고 실행한 뒤, 이어서 [supabase/migrations/0002_function_hardening.sql](../supabase/migrations/0002_function_hardening.sql)도 실행합니다(함수 보안 경고 정리). (Supabase CLI를 쓴다면 `supabase db push`.)
 4. 적용 확인(SQL Editor):
 
    ```sql
