@@ -3,8 +3,8 @@
 import { addMonths, buildMonthGrid, groupByDue, monthOf, parseMonthKey } from '../domain/calendar.js';
 import { todayKst } from '../domain/date.js';
 import { getUrgency } from '../domain/urgency.js';
-import { setMonth } from '../state/criteria.js';
-import { getVisibleTasks } from '../state/selectors.js';
+import { setMonth, setView } from '../state/criteria.js';
+import { countInProgress, getVisibleTasks } from '../state/selectors.js';
 import { getState, memberById, setState } from '../state/store.js';
 import { openDialog } from '../ui/dialog.js';
 import { h, preserveFocus } from '../ui/dom.js';
@@ -120,6 +120,21 @@ export function renderCalendarView(root) {
       h('button', { type: 'button', class: 'btn btn--secondary', onClick: () => setMonth(monthOf(today)) }, '오늘'),
     );
 
+    // 진행 중 업무 바로가기: 건수는 선택한 달이 아니라 전체 기간의 진행 중 업무 기준이다.
+    const inProgressCount = countInProgress();
+    const shortcut = h(
+      'div',
+      { class: 'cal-shortcut row' },
+      h('button', {
+        type: 'button',
+        class: 'btn btn--secondary',
+        'data-focus-key': 'cal-active-shortcut',
+        'aria-describedby': 'cal-active-note',
+        onClick: () => setView('active'),
+      }, `진행 중 업무 ${inProgressCount}건 보기`),
+      h('span', { class: 'muted', id: 'cal-active-note' }, '전체 기간 기준'),
+    );
+
     const table = h(
       'table',
       { class: `cal-grid${mobile ? ' cal-grid--mobile' : ''}` },
@@ -150,7 +165,7 @@ export function renderCalendarView(root) {
         : h('p', { class: 'muted' }, '마감일이 없는 할일이 없습니다.'),
     );
 
-    root.replaceChildren(h('div', { class: 'stack' }, nav, table, dayPanel || '', noDueSection));
+    root.replaceChildren(h('div', { class: 'stack' }, nav, shortcut, table, dayPanel || '', noDueSection));
   });
 }
 

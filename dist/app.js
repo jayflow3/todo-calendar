@@ -707,6 +707,9 @@
   var URGENCY_VALUES = ["soon", "overdue"];
   var emptyFilters = () => ({ status: [], priority: [], assignee: [], category: [], urgency: [] });
   var countActiveFilters = (filters) => FILTER_KEYS.reduce((n, key) => n + filters[key].length, 0);
+  var ACTIVE_VIEW = "active";
+  var scopeFilters = (view, filters) => view === ACTIVE_VIEW ? { ...filters, status: ["in_progress"] } : filters;
+  var countUserFilters = (view, filters) => countActiveFilters(view === ACTIVE_VIEW ? { ...filters, status: [] } : filters);
   var normalize = (text) => String(text ?? "").toLowerCase().replace(/\s+/g, "");
   function applyFilters(tasks, query, filters, assigneeName2 = () => null, today = todayKst()) {
     const q = normalize(query);
@@ -988,7 +991,11 @@
   var setQuery = (query) => setState({ query, page: 0 });
   var setView = (view) => setState({ view });
   var setMonth = (month) => setState({ month });
-  var clearAll = () => setState({ query: "", filters: emptyFilters(), page: 0 });
+  function resetFilters() {
+    const { view, filters } = getState();
+    return { ...emptyFilters(), ...view === ACTIVE_VIEW && { status: filters.status } };
+  }
+  var clearAll = () => setState({ query: "", filters: resetFilters(), page: 0 });
   function toggleFilter(key, value) {
     const { filters } = getState();
     const next = filters[key].includes(value) ? filters[key].filter((v) => v !== value) : [...filters[key], value];
@@ -1053,9 +1060,58 @@
     };
   }
 
+  // js/state/selectors.js
+  init_date();
+
+  // js/domain/inProgress.js
+  init_date();
+  var IN_PROGRESS_GROUPS = [
+    { key: "overdue", label: "마감 지연" },
+    { key: "soon", label: "마감 임박", hint: "오늘부터 3일 이내" },
+    { key: "later", label: "그 외 진행 중" },
+    { key: "none", label: "마감일 없음" }
+  ];
+  var isInProgress = (task) => task.status === "in_progress";
+  function groupInProgress(tasks, today, assigneeName2 = () => null) {
+    const buckets = { overdue: [], soon: [], later: [], none: [] };
+    for (const task of tasks) {
+      if (!isInProgress(task)) continue;
+      const key = task.due_date ? getUrgency(task, today)?.kind ?? "later" : "none";
+      buckets[key].push(task);
+    }
+    return IN_PROGRESS_GROUPS.map((group) => ({
+      ...group,
+      tasks: sortTasks(buckets[group.key], { key: "due_date", dir: "asc" }, assigneeName2)
+    }));
+  }
+  function dueSummary(task, today) {
+    if (!task.due_date) return { kind: "none", text: "마감일 없음", days: null };
+    const urgency = getUrgency(task, today);
+    const days = urgency ? urgency.days : diffDays(task.due_date, today);
+    if (days < 0) return { kind: "overdue", text: `${-days}일 지연`, days };
+    if (days === 0) return { kind: "soon", text: "오늘 마감", days };
+    return { kind: urgency ? "soon" : "later", text: `${days}일 남음`, days };
+  }
+
+  // js/state/selectors.js
+  var assigneeName = (id) => memberById(id)?.name ?? null;
+  function getVisibleTasks() {
+    const { tasks, query, filters, view } = getState();
+    return applyFilters(tasks, query, scopeFilters(view, filters), assigneeName, todayKst());
+  }
+  function getScopeTasks() {
+    const { tasks, view } = getState();
+    return view === ACTIVE_VIEW ? tasks.filter(isInProgress) : tasks;
+  }
+  var countInProgress = () => getState().tasks.filter(isInProgress).length;
+  function hasActiveCriteria() {
+    const { query, filters, view } = getState();
+    return Boolean(query.trim()) || countUserFilters(view, filters) > 0;
+  }
+
   // js/state/urlState.js
   init_validation();
-  var VIEWS = ["list", "kanban", "calendar", "dashboard"];
+  var VIEWS = ["list", "kanban", "calendar", "dashboard", "active"];
   var ENUMS = { status: STATUSES, priority: PRIORITIES, urgency: URGENCY_VALUES };
   function parseUrlState(search) {
     const params = new URLSearchParams(search);
@@ -1080,20 +1136,6 @@
 
   // js/ui/filterBar.js
   init_validation();
-
-  // js/state/selectors.js
-  init_date();
-  var assigneeName = (id) => memberById(id)?.name ?? null;
-  function getVisibleTasks() {
-    const { tasks, query, filters } = getState();
-    return applyFilters(tasks, query, filters, assigneeName, todayKst());
-  }
-  function hasActiveCriteria() {
-    const { query, filters } = getState();
-    return Boolean(query.trim()) || countActiveFilters(filters) > 0;
-  }
-
-  // js/ui/filterBar.js
   var GROUP_LABEL = { status: "상태", priority: "우선순위", assignee: "담당자", category: "카테고리", urgency: "마감" };
   var URGENCY_LABEL = { soon: "임박(D-3~D-day)", overdue: "지연" };
   var SEARCH_DEBOUNCE_MS = 200;
@@ -1157,27 +1199,37 @@
         setQuery(searchInput.value);
       }, SEARCH_DEBOUNCE_MS);
     });
-    function buildPanel(state2) {
-      const groups = FILTER_KEYS.map(
-        (key) => h(
+    function filterGroup(key, state2) {
+      if (key === "status" && state2.view === ACTIVE_VIEW) {
+        return h(
           "fieldset",
           { class: "filter-group" },
-          h("legend", null, GROUP_LABEL[key]),
-          ...optionsFor(key, state2).map(
-            ({ value, text }) => h(
-              "label",
-              { class: "check" },
-              h("input", {
-                type: "checkbox",
-                checked: state2.filters[key].includes(value),
-                "data-focus-key": `filter-${key}-${value}`,
-                onChange: () => toggleFilter(key, value)
-              }),
-              h("span", null, text)
-            )
+          h("legend", null, GROUP_LABEL.status),
+          h("p", { class: "filter-fixed" }, STATUS_LABEL.in_progress, h("span", { class: "muted" }, " (이 보기에서는 고정)"))
+        );
+      }
+      return h(
+        "fieldset",
+        { class: "filter-group" },
+        h("legend", null, GROUP_LABEL[key]),
+        ...optionsFor(key, state2).map(
+          ({ value, text }) => h(
+            "label",
+            { class: "check" },
+            h("input", {
+              type: "checkbox",
+              checked: state2.filters[key].includes(value),
+              "data-focus-key": `filter-${key}-${value}`,
+              onChange: () => toggleFilter(key, value)
+            }),
+            h("span", null, text)
           )
         )
       );
+    }
+    function buildPanel(state2) {
+      const activeView = state2.view === ACTIVE_VIEW;
+      const groups = FILTER_KEYS.map((key) => filterGroup(key, state2));
       panel.replaceChildren(
         h(
           "div",
@@ -1186,17 +1238,20 @@
           h("button", { type: "button", class: "btn btn--secondary filter-panel__close", onClick: () => setOpen(false) }, "닫기")
         ),
         ...groups,
-        h("button", { type: "button", class: "btn btn--secondary", "data-focus-key": "filter-clear", onClick: clearAll }, "모두 해제")
+        h("button", { type: "button", class: "btn btn--secondary", "data-focus-key": "filter-clear", onClick: clearAll }, activeView ? "조건 초기화" : "모두 해제")
       );
     }
     function buildChips(state2) {
       const items = [];
+      const activeView = state2.view === ACTIVE_VIEW;
+      if (activeView) items.push(h("span", { class: "chip chip--fixed" }, "상태: 진행 중 (고정)"));
       if (state2.query.trim()) {
         items.push(
           h("button", { type: "button", class: "chip", "aria-label": `검색어 해제: ${state2.query.trim()}`, onClick: () => setQuery("") }, `검색: ${state2.query.trim()} ✕`)
         );
       }
       for (const key of FILTER_KEYS) {
+        if (activeView && key === "status") continue;
         for (const value of state2.filters[key]) {
           items.push(
             h(
@@ -1213,21 +1268,24 @@
           );
         }
       }
-      if (items.length) items.push(h("button", { type: "button", class: "btn btn--secondary chip-clear", onClick: clearAll }, "모두 해제"));
+      const fixed = activeView ? 1 : 0;
+      if (items.length > fixed) items.push(h("button", { type: "button", class: "btn btn--secondary chip-clear", onClick: clearAll }, activeView ? "조건 초기화" : "모두 해제"));
       chips.replaceChildren(...items);
     }
     function update(state2) {
-      const next = JSON.stringify([state2.filters, state2.members.map((m) => [m.id, m.name, m.label, m.active]), state2.config?.categories]);
+      const next = JSON.stringify([state2.view === ACTIVE_VIEW, state2.filters, state2.members.map((m) => [m.id, m.name, m.label, m.active]), state2.config?.categories]);
       if (next !== signature) {
         signature = next;
         preserveFocus(() => buildPanel(state2));
       }
       preserveFocus(() => buildChips(state2));
       if (typingTimer === null && searchInput.value.trim() !== state2.query.trim()) searchInput.value = state2.query;
-      const active = countActiveFilters(state2.filters);
+      const active = countUserFilters(state2.view, state2.filters);
       toggle.textContent = active ? `필터 (${active})` : "필터";
       const shown = getVisibleTasks().length;
-      count.textContent = state2.loading ? "" : hasActiveCriteria() ? `전체 ${state2.tasks.length}건 중 ${shown}건` : `${shown}건`;
+      const scope = state2.view === ACTIVE_VIEW ? "진행 중" : "전체";
+      const total = getScopeTasks().length;
+      count.textContent = state2.loading ? "" : hasActiveCriteria() ? `${scope} ${total}건 중 ${shown}건` : state2.view === ACTIVE_VIEW ? `진행 중 ${shown}건` : `${shown}건`;
     }
     subscribeStore(update);
     update(getState());
@@ -1688,8 +1746,27 @@
     render();
   }
 
-  // js/views/calendarView.js
+  // js/views/activeView.js
   init_date();
+
+  // js/ui/taskParts.js
+  function statusSelect(task, keyPrefix = "status") {
+    return h(
+      "select",
+      {
+        class: "field__input field__input--compact",
+        "aria-label": `상태 변경: ${task.title}`,
+        "data-focus-key": `${keyPrefix}-${task.id}`,
+        value: task.status,
+        onChange: (event) => changeStatus(task, event.target.value)
+      },
+      ...Object.entries(STATUS_LABEL).map(([value, text]) => option(value, text))
+    );
+  }
+  function remoteMark(task) {
+    const mark = getState().remoteMarks[task.id];
+    return mark ? h("span", { class: "remote-mark", role: "status" }, `${mark.by}님이 수정함`) : null;
+  }
 
   // js/ui/taskDetail.js
   init_date();
@@ -1833,7 +1910,251 @@
     renderEvents();
   }
 
+  // js/views/listView.js
+  init_date();
+  var PAGE_SIZE = 200;
+  var COLUMNS = [
+    { key: "title", label: "제목" },
+    { key: "status", label: "상태" },
+    { key: "priority", label: "우선순위" },
+    { key: "assignee", label: "담당자" },
+    { key: "category", label: "카테고리" },
+    { key: "due_date", label: "마감일" }
+  ];
+  function setSort(key) {
+    const { sort } = getState();
+    setState({
+      sort: { key, dir: sort.key === key && sort.dir === "asc" ? "desc" : "asc" },
+      page: 0
+    });
+  }
+  function skeleton() {
+    return h(
+      "div",
+      { class: "skeleton-list", "aria-busy": "true", "aria-label": "목록을 불러오는 중" },
+      ...Array.from({ length: 5 }, () => h("div", { class: "skeleton" }))
+    );
+  }
+  function emptyState() {
+    if (hasActiveCriteria()) {
+      return h(
+        "div",
+        { class: "empty-state card stack" },
+        h("p", null, "조건에 맞는 할일이 없습니다."),
+        h("div", { class: "row" }, h("button", { type: "button", class: "btn btn--secondary", onClick: clearAll }, "모두 해제"))
+      );
+    }
+    return h(
+      "div",
+      { class: "empty-state card stack" },
+      h("p", null, "등록된 할일이 없습니다."),
+      h("div", { class: "row" }, h("button", { type: "button", class: "btn btn--primary", onClick: () => openTaskForm() }, "새 할일"))
+    );
+  }
+  function sortControls(sort) {
+    return h(
+      "div",
+      { class: "sort-mobile field" },
+      h("label", { class: "field__label", for: "sort-select" }, "정렬"),
+      h(
+        "div",
+        { class: "row" },
+        h(
+          "select",
+          { id: "sort-select", class: "field__input", value: sort.key, onChange: (e) => setState({ sort: { key: e.target.value, dir: "asc" }, page: 0 }) },
+          ...COLUMNS.map((c) => option(c.key, c.label))
+        ),
+        h("button", {
+          type: "button",
+          class: "btn btn--secondary",
+          "aria-label": sort.dir === "asc" ? "오름차순 (눌러서 내림차순으로 변경)" : "내림차순 (눌러서 오름차순으로 변경)",
+          onClick: () => setState({ sort: { ...sort, dir: sort.dir === "asc" ? "desc" : "asc" } })
+        }, sort.dir === "asc" ? "↑" : "↓")
+      )
+    );
+  }
+  function row(task, today) {
+    const assignee = memberName(memberById(task.assignee_id));
+    return h(
+      "tr",
+      { class: "task-row", onClick: (e) => {
+        if (!e.target.closest("select, button")) openTaskDetail(task.id);
+      } },
+      h(
+        "td",
+        { "data-label": "제목", class: "task-row__title" },
+        h("button", { type: "button", class: "link-btn", "data-focus-key": `open-${task.id}`, onClick: () => openTaskDetail(task.id) }, task.title),
+        remoteMark(task)
+      ),
+      h("td", { "data-label": "상태" }, statusSelect(task)),
+      h("td", { "data-label": "우선순위" }, priorityBadge(task.priority)),
+      h("td", { "data-label": "담당자" }, assignee || "미배정"),
+      h("td", { "data-label": "카테고리" }, task.category ?? ""),
+      h("td", { "data-label": "마감일" }, task.due_date ?? "없음", " ", urgencyBadge(getUrgency(task, today)))
+    );
+  }
+  function renderListView(root) {
+    const { loading, sort, page } = getState();
+    const tasks = getVisibleTasks();
+    const restoreFocus = captureFocus();
+    const draw = () => {
+      if (loading) return root.replaceChildren(skeleton());
+      if (!tasks.length) return root.replaceChildren(emptyState());
+      const today = todayKst();
+      const sorted = sortTasks(tasks, sort, (id) => memberById(id)?.name ?? null);
+      const pages = Math.ceil(sorted.length / PAGE_SIZE);
+      const current = Math.min(page, pages - 1);
+      const visible = sorted.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
+      const ariaSort = (key) => sort.key === key ? sort.dir === "asc" ? "ascending" : "descending" : "none";
+      const tbody = h("tbody");
+      const table = h(
+        "table",
+        { class: "task-table" },
+        h("caption", { class: "visually-hidden" }, `할일 ${sorted.length}건`),
+        h("thead", null, h("tr", null, ...COLUMNS.map((c) => h(
+          "th",
+          { scope: "col", "aria-sort": ariaSort(c.key) },
+          h(
+            "button",
+            { type: "button", class: "sort-btn", "data-focus-key": `sort-${c.key}`, onClick: () => setSort(c.key) },
+            c.label,
+            sort.key === c.key ? sort.dir === "asc" ? " ▲" : " ▼" : ""
+          )
+        )))),
+        tbody
+      );
+      const pager = pages > 1 && h(
+        "nav",
+        { class: "row pager", "aria-label": "페이지" },
+        h("button", { type: "button", class: "btn btn--secondary", disabled: current === 0, onClick: () => setState({ page: current - 1 }) }, "이전"),
+        h("span", null, `${current * PAGE_SIZE + 1}–${current * PAGE_SIZE + visible.length} / ${sorted.length}건`),
+        h("button", { type: "button", class: "btn btn--secondary", disabled: current >= pages - 1, onClick: () => setState({ page: current + 1 }) }, "다음")
+      );
+      root.replaceChildren(sortControls(sort), table, pager || "");
+      renderProgressive(tbody, visible, (t) => row(t, today), { first: 40, chunk: 40, onDone: restoreFocus });
+    };
+    draw();
+    restoreFocus();
+  }
+
+  // js/views/activeView.js
+  var FIRST_PAINT_ITEMS = 40;
+  function emptyState2() {
+    if (getScopeTasks().length === 0) {
+      return h(
+        "div",
+        { class: "empty-state card stack" },
+        h("p", null, "진행 중인 업무가 없습니다."),
+        h("p", { class: "muted" }, "업무의 상태를 「진행 중」으로 바꾸면 여기에 모입니다."),
+        h(
+          "div",
+          { class: "row" },
+          h("button", { type: "button", class: "btn btn--primary", onClick: () => openTaskForm({ defaults: { status: "in_progress" } }) }, "새 할일"),
+          h("button", { type: "button", class: "btn btn--secondary", onClick: () => setView("list") }, "리스트 보기")
+        )
+      );
+    }
+    return h(
+      "div",
+      { class: "empty-state card stack" },
+      h("p", null, "조건에 맞는 진행 중 업무가 없습니다."),
+      hasActiveCriteria() && h("div", { class: "row" }, h("button", { type: "button", class: "btn btn--secondary", onClick: clearAll }, "조건 초기화"))
+    );
+  }
+  function item(task, group, today) {
+    const assignee = memberName(memberById(task.assignee_id));
+    const due = dueSummary(task, today);
+    return h(
+      "li",
+      {
+        class: `active-item card active-item--${group.key}`,
+        onClick: (event) => {
+          if (!event.target.closest("select, button")) openTaskDetail(task.id);
+        }
+      },
+      // 제목과 담당자가 가장 먼저 눈에 들어오도록 왼쪽에 크게 둔다.
+      h(
+        "div",
+        { class: "active-item__main" },
+        h("button", { type: "button", class: "link-btn active-item__title", "data-focus-key": `open-${task.id}`, onClick: () => openTaskDetail(task.id) }, task.title),
+        remoteMark(task),
+        h(
+          "span",
+          { class: `active-item__assignee${assignee ? "" : " muted"}` },
+          h("span", { class: "visually-hidden" }, "담당자 "),
+          assignee || "미배정"
+        )
+      ),
+      h(
+        "div",
+        { class: "active-item__meta" },
+        h("span", { class: "active-item__due" }, h("span", { class: "visually-hidden" }, "마감일 "), task.due_date ?? "마감일 없음"),
+        // 색에만 의존하지 않도록 D-n 배지와 「2일 지연」 같은 글자를 함께 보여 준다.
+        h(
+          "span",
+          { class: `active-item__remain active-item__remain--${due.kind}` },
+          urgencyBadge(getUrgency(task, today)),
+          due.kind === "none" ? null : due.text
+        ),
+        priorityBadge(task.priority)
+      ),
+      h("div", { class: "active-item__actions" }, statusSelect(task))
+    );
+  }
+  function renderActiveView(root) {
+    const { loading } = getState();
+    if (loading) return root.replaceChildren(h("div", { class: "active-view" }, skeleton()));
+    const tasks = getVisibleTasks();
+    if (!tasks.length) return root.replaceChildren(h("div", { class: "active-view" }, emptyState2()));
+    const today = todayKst();
+    const groups = groupInProgress(tasks, today, (id) => memberById(id)?.name ?? null);
+    const restoreFocus = captureFocus();
+    const summary = h(
+      "ul",
+      { class: "active-summary", "aria-label": "마감 상황별 건수" },
+      ...groups.map((g) => h(
+        "li",
+        { class: `active-summary__item active-summary__item--${g.key}` },
+        h("span", { class: "active-summary__label" }, g.label),
+        h("strong", { class: "active-summary__count" }, `${g.tasks.length}건`)
+      ))
+    );
+    const shown = groups.filter((g) => g.tasks.length).map((g) => ({
+      group: g,
+      list: h("ul", { class: "active-list" })
+    }));
+    const sections = shown.map(({ group: g, list }) => h(
+      "section",
+      { class: "active-group stack", "aria-labelledby": `active-group-${g.key}` },
+      h(
+        "h3",
+        { class: "active-group__title", id: `active-group-${g.key}` },
+        g.label,
+        " ",
+        h("span", { class: "active-group__count" }, `${g.tasks.length}건`),
+        g.hint && h("span", { class: "active-group__hint muted" }, ` · ${g.hint}`)
+      ),
+      list
+    ));
+    root.replaceChildren(h("div", { class: "active-view stack" }, summary, ...sections));
+    let budget = FIRST_PAINT_ITEMS;
+    const drawFrom = (index) => {
+      const entry = shown[index];
+      if (!entry) return restoreFocus();
+      const first = Math.min(budget, entry.group.tasks.length);
+      budget = Math.max(0, budget - first);
+      renderProgressive(entry.list, entry.group.tasks, (t) => item(t, entry.group, today), {
+        first,
+        chunk: FIRST_PAINT_ITEMS,
+        onDone: () => drawFrom(index + 1)
+      });
+    };
+    drawFrom(0);
+    restoreFocus();
+  }
+
   // js/views/calendarView.js
+  init_date();
   var MAX_PER_CELL = 3;
   var WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
   var mobileQuery = window.matchMedia("(max-width: 639px)");
@@ -1948,6 +2269,19 @@
         h("button", { type: "button", class: "btn btn--secondary", "aria-label": "다음 달", onClick: () => setMonth(addMonths(month, 1)) }, "›"),
         h("button", { type: "button", class: "btn btn--secondary", onClick: () => setMonth(monthOf(today)) }, "오늘")
       );
+      const inProgressCount = countInProgress();
+      const shortcut = h(
+        "div",
+        { class: "cal-shortcut row" },
+        h("button", {
+          type: "button",
+          class: "btn btn--secondary",
+          "data-focus-key": "cal-active-shortcut",
+          "aria-describedby": "cal-active-note",
+          onClick: () => setView("active")
+        }, `진행 중 업무 ${inProgressCount}건 보기`),
+        h("span", { class: "muted", id: "cal-active-note" }, "전체 기간 기준")
+      );
       const table = h(
         "table",
         { class: `cal-grid${mobile ? " cal-grid--mobile" : ""}` },
@@ -1975,7 +2309,7 @@
           h("span", { class: "muted" }, memberName(memberById(t.assignee_id)) || "미배정")
         ))) : h("p", { class: "muted" }, "마감일이 없는 할일이 없습니다.")
       );
-      root.replaceChildren(h("div", { class: "stack" }, nav, table, dayPanel || "", noDueSection));
+      root.replaceChildren(h("div", { class: "stack" }, nav, shortcut, table, dayPanel || "", noDueSection));
     });
   }
   mobileQuery.addEventListener("change", () => {
@@ -2189,27 +2523,6 @@
   // js/views/kanbanView.js
   init_date();
   init_validation();
-
-  // js/ui/taskParts.js
-  function statusSelect(task, keyPrefix = "status") {
-    return h(
-      "select",
-      {
-        class: "field__input field__input--compact",
-        "aria-label": `상태 변경: ${task.title}`,
-        "data-focus-key": `${keyPrefix}-${task.id}`,
-        value: task.status,
-        onChange: (event) => changeStatus(task, event.target.value)
-      },
-      ...Object.entries(STATUS_LABEL).map(([value, text]) => option(value, text))
-    );
-  }
-  function remoteMark(task) {
-    const mark = getState().remoteMarks[task.id];
-    return mark ? h("span", { class: "remote-mark", role: "status" }, `${mark.by}님이 수정함`) : null;
-  }
-
-  // js/views/kanbanView.js
   var COLUMN_LIMIT = 100;
   var expanded = /* @__PURE__ */ new Set();
   function card(task, today) {
@@ -2305,139 +2618,13 @@
     restoreFocus();
   }
 
-  // js/views/listView.js
-  init_date();
-  var PAGE_SIZE = 200;
-  var COLUMNS = [
-    { key: "title", label: "제목" },
-    { key: "status", label: "상태" },
-    { key: "priority", label: "우선순위" },
-    { key: "assignee", label: "담당자" },
-    { key: "category", label: "카테고리" },
-    { key: "due_date", label: "마감일" }
-  ];
-  function setSort(key) {
-    const { sort } = getState();
-    setState({
-      sort: { key, dir: sort.key === key && sort.dir === "asc" ? "desc" : "asc" },
-      page: 0
-    });
-  }
-  function skeleton() {
-    return h(
-      "div",
-      { class: "skeleton-list", "aria-busy": "true", "aria-label": "목록을 불러오는 중" },
-      ...Array.from({ length: 5 }, () => h("div", { class: "skeleton" }))
-    );
-  }
-  function emptyState() {
-    if (hasActiveCriteria()) {
-      return h(
-        "div",
-        { class: "empty-state card stack" },
-        h("p", null, "조건에 맞는 할일이 없습니다."),
-        h("div", { class: "row" }, h("button", { type: "button", class: "btn btn--secondary", onClick: clearAll }, "모두 해제"))
-      );
-    }
-    return h(
-      "div",
-      { class: "empty-state card stack" },
-      h("p", null, "등록된 할일이 없습니다."),
-      h("div", { class: "row" }, h("button", { type: "button", class: "btn btn--primary", onClick: () => openTaskForm() }, "새 할일"))
-    );
-  }
-  function sortControls(sort) {
-    return h(
-      "div",
-      { class: "sort-mobile field" },
-      h("label", { class: "field__label", for: "sort-select" }, "정렬"),
-      h(
-        "div",
-        { class: "row" },
-        h(
-          "select",
-          { id: "sort-select", class: "field__input", value: sort.key, onChange: (e) => setState({ sort: { key: e.target.value, dir: "asc" }, page: 0 }) },
-          ...COLUMNS.map((c) => option(c.key, c.label))
-        ),
-        h("button", {
-          type: "button",
-          class: "btn btn--secondary",
-          "aria-label": sort.dir === "asc" ? "오름차순 (눌러서 내림차순으로 변경)" : "내림차순 (눌러서 오름차순으로 변경)",
-          onClick: () => setState({ sort: { ...sort, dir: sort.dir === "asc" ? "desc" : "asc" } })
-        }, sort.dir === "asc" ? "↑" : "↓")
-      )
-    );
-  }
-  function row(task, today) {
-    const assignee = memberName(memberById(task.assignee_id));
-    return h(
-      "tr",
-      { class: "task-row", onClick: (e) => {
-        if (!e.target.closest("select, button")) openTaskDetail(task.id);
-      } },
-      h(
-        "td",
-        { "data-label": "제목", class: "task-row__title" },
-        h("button", { type: "button", class: "link-btn", "data-focus-key": `open-${task.id}`, onClick: () => openTaskDetail(task.id) }, task.title),
-        remoteMark(task)
-      ),
-      h("td", { "data-label": "상태" }, statusSelect(task)),
-      h("td", { "data-label": "우선순위" }, priorityBadge(task.priority)),
-      h("td", { "data-label": "담당자" }, assignee || "미배정"),
-      h("td", { "data-label": "카테고리" }, task.category ?? ""),
-      h("td", { "data-label": "마감일" }, task.due_date ?? "없음", " ", urgencyBadge(getUrgency(task, today)))
-    );
-  }
-  function renderListView(root) {
-    const { loading, sort, page } = getState();
-    const tasks = getVisibleTasks();
-    const restoreFocus = captureFocus();
-    const draw = () => {
-      if (loading) return root.replaceChildren(skeleton());
-      if (!tasks.length) return root.replaceChildren(emptyState());
-      const today = todayKst();
-      const sorted = sortTasks(tasks, sort, (id) => memberById(id)?.name ?? null);
-      const pages = Math.ceil(sorted.length / PAGE_SIZE);
-      const current = Math.min(page, pages - 1);
-      const visible = sorted.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
-      const ariaSort = (key) => sort.key === key ? sort.dir === "asc" ? "ascending" : "descending" : "none";
-      const tbody = h("tbody");
-      const table = h(
-        "table",
-        { class: "task-table" },
-        h("caption", { class: "visually-hidden" }, `할일 ${sorted.length}건`),
-        h("thead", null, h("tr", null, ...COLUMNS.map((c) => h(
-          "th",
-          { scope: "col", "aria-sort": ariaSort(c.key) },
-          h(
-            "button",
-            { type: "button", class: "sort-btn", "data-focus-key": `sort-${c.key}`, onClick: () => setSort(c.key) },
-            c.label,
-            sort.key === c.key ? sort.dir === "asc" ? " ▲" : " ▼" : ""
-          )
-        )))),
-        tbody
-      );
-      const pager = pages > 1 && h(
-        "nav",
-        { class: "row pager", "aria-label": "페이지" },
-        h("button", { type: "button", class: "btn btn--secondary", disabled: current === 0, onClick: () => setState({ page: current - 1 }) }, "이전"),
-        h("span", null, `${current * PAGE_SIZE + 1}–${current * PAGE_SIZE + visible.length} / ${sorted.length}건`),
-        h("button", { type: "button", class: "btn btn--secondary", disabled: current >= pages - 1, onClick: () => setState({ page: current + 1 }) }, "다음")
-      );
-      root.replaceChildren(sortControls(sort), table, pager || "");
-      renderProgressive(tbody, visible, (t) => row(t, today), { first: 40, chunk: 40, onDone: restoreFocus });
-    };
-    draw();
-    restoreFocus();
-  }
-
   // js/main.js
   var RENDERERS = {
     list: renderListView,
     kanban: renderKanbanView,
     calendar: renderCalendarView,
-    dashboard: renderDashboardView
+    dashboard: renderDashboardView,
+    active: renderActiveView
   };
   function loadConfig() {
     return { ...defaultConfig_default, ...window.TODO_CONFIG ?? {} };
@@ -2469,7 +2656,10 @@
       setView(next.dataset.view);
     });
     return () => {
-      const { view } = getState();
+      const { view, loading } = getState();
+      const activeTab = document.getElementById("tab-active");
+      const count = loading ? null : countInProgress();
+      activeTab.querySelector(".tab-count").textContent = count ?? "";
       for (const tab of tabs) {
         const selected = tab.dataset.view === view;
         tab.setAttribute("aria-selected", String(selected));
@@ -2504,7 +2694,8 @@
       userLabel.textContent = currentUser ? memberName(currentUser) : "";
       syncTabs();
       syncUrl();
-      heading.textContent = document.querySelector('[role="tab"][aria-selected="true"]')?.textContent ?? "";
+      const selectedTab = document.querySelector('[role="tab"][aria-selected="true"]');
+      heading.textContent = selectedTab?.dataset.title ?? selectedTab?.textContent ?? "";
       (RENDERERS[view] ?? renderListView)(viewRoot);
     };
     subscribeStore(render);

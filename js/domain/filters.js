@@ -10,6 +10,17 @@ export const emptyFilters = () => ({ status: [], priority: [], assignee: [], cat
 
 export const countActiveFilters = (filters) => FILTER_KEYS.reduce((n, key) => n + filters[key].length, 0);
 
+export const ACTIVE_VIEW = 'active'; // 「진행 중 업무」 보기
+
+/**
+ * 「진행 중 업무」 보기에서는 저장된 상태 필터(다른 보기에서 건 것)와 상관없이 상태를 진행 중으로 고정한다.
+ * 저장된 필터 값 자체는 바꾸지 않으므로, 다른 보기로 돌아가면 원래 필터가 그대로 적용된다.
+ */
+export const scopeFilters = (view, filters) => (view === ACTIVE_VIEW ? { ...filters, status: ['in_progress'] } : filters);
+
+/** 사용자가 고른 필터 개수. 진행 중 보기에서는 고정된 상태 조건을 세지 않는다. */
+export const countUserFilters = (view, filters) => countActiveFilters(view === ACTIVE_VIEW ? { ...filters, status: [] } : filters);
+
 /** 대소문자와 모든 공백을 무시하기 위한 정규화. */
 const normalize = (text) => String(text ?? '').toLowerCase().replace(/\s+/g, '');
 

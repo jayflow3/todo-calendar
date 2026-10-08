@@ -7,7 +7,7 @@ import { launch, openAsUser, startServer } from './helpers.js';
 let server;
 let browser;
 const AXE = readFileSync(new URL('../../node_modules/axe-core/axe.min.js', import.meta.url), 'utf8');
-const VIEWS = [['list', '리스트'], ['kanban', '칸반'], ['calendar', '캘린더'], ['dashboard', '대시보드']];
+const VIEWS = [['list', '리스트'], ['kanban', '칸반'], ['calendar', '캘린더'], ['dashboard', '대시보드'], ['active', '진행 중 업무']];
 
 before(async () => {
   server = await startServer(8794);
@@ -20,7 +20,7 @@ after(async () => {
 
 const switchView = async (page, name) => {
   await page.getByRole('tab', { name }).click();
-  await page.waitForFunction((n) => document.querySelector('[role=tab][aria-selected=true]')?.textContent === n, name);
+  await page.waitForFunction((n) => document.querySelector('[role=tab][aria-selected=true]')?.textContent.startsWith(n), name);
   await page.waitForTimeout(100);
 };
 

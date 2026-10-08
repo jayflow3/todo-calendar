@@ -3,7 +3,7 @@ import { emptyFilters, FILTER_KEYS, URGENCY_VALUES } from '../domain/filters.js'
 import { parseMonthKey } from '../domain/calendar.js';
 import { PRIORITIES, STATUSES } from '../domain/validation.js';
 
-export const VIEWS = ['list', 'kanban', 'calendar', 'dashboard'];
+export const VIEWS = ['list', 'kanban', 'calendar', 'dashboard', 'active'];
 
 const ENUMS = { status: STATUSES, priority: PRIORITIES, urgency: URGENCY_VALUES };
 

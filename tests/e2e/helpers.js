@@ -37,7 +37,7 @@ export async function openAsUser(browser, url, name = '김민준', viewport = { 
   const dialog = page.getByRole('dialog', { name: '이름을 입력하세요' });
   await dialog.getByLabel('이름').fill(name);
   await dialog.getByRole('button', { name: '확인' }).click();
-  await page.locator('.task-table, .kanban, .cal-grid, .empty-state, .dashboard').first().waitFor();
+  await page.locator('.task-table, .kanban, .cal-grid, .empty-state, .dashboard, .active-view').first().waitFor();
   await page.waitForFunction(() => !document.querySelector('[aria-busy="true"]'));
   return { page, context, errors };
 }

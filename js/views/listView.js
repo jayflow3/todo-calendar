@@ -31,7 +31,7 @@ function setSort(key) {
   });
 }
 
-function skeleton() {
+export function skeleton() {
   return h(
     'div',
     { class: 'skeleton-list', 'aria-busy': 'true', 'aria-label': '목록을 불러오는 중' },

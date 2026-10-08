@@ -1161,3 +1161,188 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 10rem;
 }
+
+/* ---- 진행 중 업무 보기 ---- */
+
+/* 탭의 진행 중 건수. 선택된 탭에서는 브랜드색으로 채운다(흰 글자 대비는 라이트·다크 모두 4.5:1 이상). */
+.tab-count {
+  display: inline-block;
+  min-width: var(--space-5);
+  margin-left: var(--space-1);
+  padding: 0 var(--space-2);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.tab-count:empty {
+  display: none;
+}
+
+.view-tab[aria-current='page'] .tab-count {
+  background: var(--color-brand-indigo);
+  color: var(--color-on-brand);
+}
+
+/* 적용 중인 고정 조건(해제할 수 없음)과 필터 패널의 고정 안내 */
+.chip--fixed {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-surface-sunken);
+  border-style: dashed;
+  cursor: default;
+}
+
+.chip--fixed:hover {
+  background: var(--color-surface-sunken);
+}
+
+.filter-fixed {
+  margin: 0;
+  min-height: var(--size-touch);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: var(--font-weight-medium);
+}
+
+/* 캘린더의 「진행 중 업무 N건 보기」 바로가기 */
+.cal-shortcut {
+  gap: var(--space-2) var(--space-3);
+}
+
+/* 마감 상황별 건수 요약 */
+.active-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.active-summary__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-left: var(--space-1) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.active-summary__item--overdue {
+  border-left-color: var(--badge-urgent-overdue-bg);
+}
+
+.active-summary__item--soon {
+  border-left-color: var(--badge-urgent-soon-fg);
+}
+
+.active-summary__label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.active-summary__count {
+  font-size: var(--font-size-lg);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.active-group__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+}
+
+.active-group__count {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.active-group__hint {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.active-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 업무 한 줄: 제목·담당자 → 마감 정보 → 상태 변경 */
+.active-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-left: var(--space-1) solid var(--color-border-subtle);
+  cursor: pointer;
+}
+
+.active-item--overdue {
+  border-left-color: var(--badge-urgent-overdue-bg);
+}
+
+.active-item--soon {
+  border-left-color: var(--badge-urgent-soon-fg);
+}
+
+.active-item__main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.active-item__title {
+  font-weight: var(--font-weight-semibold);
+}
+
+.active-item__assignee {
+  font-weight: var(--font-weight-medium);
+}
+
+.active-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.active-item__remain {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-weight-semibold);
+}
+
+.active-item__remain--later {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+/* 모바일(≤639px): 정보를 세로로 쌓아 가로 스크롤 없이 읽는다. */
+@media (max-width: 639px) {
+  .active-item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .active-item__actions .field__input {
+    width: 100%;
+  }
+}
