@@ -32,15 +32,35 @@ function adopt(member) {
   setState({ currentUser: member });
 }
 
-/** 저장된 사용자가 유효하면 그대로 쓰고, 아니면 이름 입력 대화상자를 연다(닫을 수 없음). */
-export async function ensureCurrentUser() {
+/** 설정의 기본 사용자 이름으로 부서원을 찾고, 없으면 등록한다. 실패하면 null(이름 입력 대화상자로 넘어간다). */
+async function adoptDefaultUser(name) {
+  const trimmed = String(name ?? '').trim();
+  if (!trimmed) return null;
+  try {
+    let member = activeMembers().find((m) => m.name === trimmed && !m.label);
+    if (!member) {
+      member = await taskApi.addMember({ name: trimmed, label: null });
+      await reloadMembers();
+    }
+    adopt(member);
+    return member;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 저장된 사용자가 유효하면 그대로 쓴다. 없으면 기본 사용자 이름(defaultUserName 설정, 시연용·기본은 꺼짐)을 쓰고,
+ * 그것도 없으면 이름 입력 대화상자를 연다(닫을 수 없음).
+ */
+export async function ensureCurrentUser({ defaultUserName } = {}) {
   const stored = readStoredId();
   const found = stored && activeMembers().find((m) => m.id === stored);
   if (found) {
     adopt(found);
     return found;
   }
-  return openIdentityDialog({ closable: false });
+  return (await adoptDefaultUser(defaultUserName)) ?? openIdentityDialog({ closable: false });
 }
 
 /** @returns {Promise<object|null>} 선택·등록된 부서원. 취소하면 null. */

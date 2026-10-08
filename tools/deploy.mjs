@@ -41,12 +41,15 @@ export function makeConfigText(env) {
   if (role !== null && role !== 'anon') {
     throw new Error(`SUPABASE_ANON_KEY의 role이 anon이 아닙니다(${role}).`);
   }
+  // 선택: 시연용 기본 사용자. 이름 입력창을 건너뛰고 이 이름으로 시작한다(없으면 입력창을 띄운다).
+  const defaultUserName = (env.DEFAULT_USER_NAME ?? '').trim();
   return [
     '// 배포 시 tools/deploy.mjs가 환경변수로 만든 파일(저장소에는 없다).',
     'window.TODO_CONFIG = {',
     "  adapter: 'supabase',",
     `  supabaseUrl: ${JSON.stringify(url)},`,
     `  supabaseAnonKey: ${JSON.stringify(key)},`,
+    ...(defaultUserName ? [`  defaultUserName: ${JSON.stringify(defaultUserName)},`] : []),
     '};',
     '',
   ].join('\n');

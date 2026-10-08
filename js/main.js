@@ -124,7 +124,7 @@ async function start() {
   wireShell();
 
   await reloadMembers();
-  await ensureCurrentUser();
+  await ensureCurrentUser({ defaultUserName: config.defaultUserName });
   await reloadTasks();
 
   // 실시간 반영: 변경 구독 + 포커스 복귀 재조회 + 연결 끊김 시 폴링(PRD 6.3)

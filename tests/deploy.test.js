@@ -27,6 +27,13 @@ test('deploy: 새 형식 publishable key도 받는다', () => {
   assert.equal(evalConfig(makeConfigText({ SUPABASE_URL: URL_OK, SUPABASE_ANON_KEY: 'sb_publishable_abc123' })).supabaseAnonKey, 'sb_publishable_abc123');
 });
 
+test('deploy: DEFAULT_USER_NAME이 있을 때만 기본 사용자를 설정에 넣는다', () => {
+  const base = { SUPABASE_URL: URL_OK, SUPABASE_ANON_KEY: jwt('anon') };
+  assert.equal(evalConfig(makeConfigText({ ...base, DEFAULT_USER_NAME: ' TEST ' })).defaultUserName, 'TEST');
+  assert.equal('defaultUserName' in evalConfig(makeConfigText(base)), false);
+  assert.equal('defaultUserName' in evalConfig(makeConfigText({ ...base, DEFAULT_USER_NAME: '  ' })), false);
+});
+
 test('deploy: 환경변수가 없으면 local 모드로 조용히 배포하지 않고 실패한다', () => {
   assert.throws(() => makeConfigText({}), /SUPABASE_URL, SUPABASE_ANON_KEY가 필요/);
   assert.throws(() => makeConfigText({ SUPABASE_URL: URL_OK }), /필요/);
