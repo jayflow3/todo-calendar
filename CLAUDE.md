@@ -47,7 +47,7 @@ PRD는 이전 초안(localStorage 기반 일정 캘린더)을 대체한다. loca
 
 ## 기술 제약
 
-- HTML / CSS / Vanilla JS(소스는 ES 모듈, 배포는 esbuild로 묶은 `dist/app.js`). 프레임워크·npm **런타임** 의존성 없음(esbuild·Playwright·axe는 개발 도구). 필요한 라이브러리(`@supabase/supabase-js`)는 `vendor/`에 정적 파일로 포함한다.
+- HTML / CSS / Vanilla JS(소스는 ES 모듈, 배포는 esbuild로 묶은 `dist/app.js`). 프레임워크·npm **런타임** 의존성 없음(esbuild·Playwright·axe는 개발 도구). 필요한 라이브러리(`@supabase/supabase-js`)와 글꼴(Pretendard Variable 동적 서브셋 92조각 + `pretendard.css` + OFL 라이선스, `vendor/fonts/`)은 `vendor/`에 정적 파일로 포함한다(글꼴은 `font-display: swap`, 화면에 쓰는 글자가 든 조각만 내려받는다. 조각을 지우거나 배포 목록에서 빼면 `tests/fonts.test.js`가 잡는다).
 - 외부 CDN·웹폰트 요청 금지(사내망 차단 대비).
 - 모든 색·간격·모서리·그림자·모션 값은 `css/tokens.css`의 CSS 변수만 사용한다. 컴포넌트 CSS에 hex 색상, px 간격 숫자를 직접 쓰지 않는다(0, 1px 테두리 등 구조적 값 제외). 토큰 값을 바꿔도 WCAG 2.1 AA 명도 대비(본문 4.5:1, UI 요소 3:1)를 유지한다.
 - 사용자 입력(제목·설명·댓글·이름·라벨)을 `innerHTML`에 넣지 않는다. 텍스트는 `textContent`로 출력하고, HTML을 조립해야 하면 공통 `escapeHtml()`을 거친다.

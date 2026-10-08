@@ -54,7 +54,7 @@ connect-src 'self' https://<프로젝트 ref>.supabase.co wss://<프로젝트 re
 
 | 복사 | 제외(개발용) |
 | --- | --- |
-| `index.html`, `css/`, `dist/app.js`, `js/compat.js`, `js/theme.js`, `js/config.js`(**직접 만든 설정**), `vendor/supabase-js.umd.js` | `js/`의 나머지 소스, `tests/`, `tools/`, `docs/`, `supabase/`, `node_modules/`, `dev.html`, `PRD.md`, `package*.json` |
+| `index.html`, `css/`, `dist/app.js`, `js/compat.js`, `js/theme.js`, `js/config.js`(**직접 만든 설정**), `vendor/supabase-js.umd.js`, `vendor/fonts/`(글꼴 Pretendard, 파일 92개) | `js/`의 나머지 소스, `tests/`, `tools/`, `docs/`, `supabase/`, `node_modules/`, `dev.html`, `PRD.md`, `package*.json` |
 
 권장 웹서버 설정(nginx 예시, 사내 주소에 맞게 수정):
 

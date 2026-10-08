@@ -48,7 +48,7 @@ test('deploy: 주소 형식이 틀리면 실패한다', () => {
 test('deploy: public/에 필요한 파일만 복사하고 config.js를 넣는다', () => {
   const out = stage({ SUPABASE_URL: URL_OK, SUPABASE_ANON_KEY: jwt('anon') });
   try {
-    for (const f of ['index.html', 'css/tokens.css', 'dist/app.js', 'js/compat.js', 'js/theme.js', 'js/config.js', 'vendor/supabase-js.umd.js'])
+    for (const f of ['index.html', 'css/tokens.css', 'dist/app.js', 'js/compat.js', 'js/theme.js', 'js/config.js', 'vendor/supabase-js.umd.js', 'vendor/fonts/pretendard.css', 'vendor/fonts/PretendardVariable.subset.0.woff2', 'vendor/fonts/LICENSE.txt'])
       assert.ok(existsSync(join(out, f)), f);
     for (const f of ['PRD.md', 'tests', 'tools', 'supabase', 'docs', 'node_modules', 'package.json'])
       assert.ok(!existsSync(join(out, f)), `${f}는 올리지 않는다`);

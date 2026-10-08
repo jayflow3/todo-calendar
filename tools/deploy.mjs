@@ -8,7 +8,7 @@ import { resolve } from 'node:path';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const OUT = 'public';
-const COPY = ['index.html', 'css', 'dist/app.js', 'js/compat.js', 'js/theme.js', 'vendor/supabase-js.umd.js'];
+const COPY = ['index.html', 'css', 'dist/app.js', 'js/compat.js', 'js/theme.js', 'vendor/supabase-js.umd.js', 'vendor/fonts'];
 
 // 관리자 키는 어디에도 두지 않는다(정적 점검이 소스에서 이 이름을 찾으므로 문자열을 나눠 적는다).
 const ADMIN_ROLE = ['service', 'role'].join('_');

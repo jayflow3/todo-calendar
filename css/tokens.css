@@ -93,7 +93,7 @@
   --focus-ring-offset: 2px;
 
   /* 타이포그래피 */
-  --font-sans: "Pretendard", system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-sans: "Pretendard Variable", "Pretendard", system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-size-sm: 0.8125rem;
   --font-size-base: 1rem;
   --font-size-lg: 1.25rem;

@@ -304,7 +304,7 @@
 - 둥근 모서리, 1px 연한 테두리와 가벼운 그림자, 부드러운 전환 애니메이션을 기본으로 합니다.
 - 상태와 우선순위는 어느 화면에서든 **같은 색·같은 형태의 배지**로 표시합니다.
 - **라이트/다크 테마(F-13):** 헤더 오른쪽 위 버튼으로 전환하고(라이트일 때 「다크 모드」, 다크일 때 「라이트 모드」), 선택은 `localStorage`에만 저장합니다. 첫 화면을 그리기 전에 적용해 깜빡임을 막습니다. 다크는 깊은 근흑 톤이며 색 토큰만 덮어씁니다(§8.2).
-- 폰트는 외부 CDN 없이 시스템 폰트 스택을 씁니다(제목은 자간을 살짝 좁히고, 숫자는 폭을 맞춥니다).
+- 폰트는 **Pretendard Variable**(SIL OFL 1.1)을 `vendor/fonts/`에 직접 포함해 외부 요청 없이 씁니다. 동적 서브셋이라 화면에 쓰는 글자가 든 조각만 내려받고(보통 10개 안팎, 약 0.2~0.3MB), `font-display: swap`으로 글꼴이 늦게 와도 글자는 먼저 보입니다. 내려받지 못하면 시스템 폰트로 대체됩니다. 제목은 자간을 살짝 좁히고 숫자는 폭을 맞춥니다.
 
 ### 8.2 디자인 토큰 (색·간격·모서리·그림자·모션은 모두 토큰으로 관리하며 하드코딩 금지)
 
@@ -357,7 +357,7 @@
 | `--duration-fast` / `--duration-base` / `--duration-slow` | 120 / 200 / 320ms |
 | `--ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` |
 | `--bp-sm` / `--bp-md` / `--bp-lg` / `--bp-xl` | 640 / 1024 / 1440px (§7.1) |
-| `--font-sans` | `"Pretendard", system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif` (폰트는 외부 CDN 없이 포함하거나 시스템 폰트 사용) |
+| `--font-sans` | `"Pretendard Variable", "Pretendard", system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif` (Pretendard는 `vendor/fonts/`에 포함, 외부 CDN 없음. 글꼴 파일은 §7.2의 첫 화면 용량에 넣지 않고 필요한 조각만 지연 로딩) |
 | `--font-size-xl` / `--font-weight-semibold` / `--letter-spacing-tight` | 2rem(대시보드 큰 숫자) / 600(버튼·배지·열 머리) / -0.015em(제목 자간) |
 
 **다크 테마** — `<html data-theme="dark">`일 때 아래 색 토큰만 덮어씁니다(간격·모서리·모션은 그대로). 라이트와 같은 명도 대비 기준을 만족하며, 같은 조합 33개를 자동으로 검사합니다(본문류 최저 6.0:1, UI 요소 최저 4.6:1).
