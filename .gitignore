@@ -1,3 +1,6 @@
 js/config.js
 node_modules/
 .claude/settings.local.json
+.mcp.json
+.env.local
+public/

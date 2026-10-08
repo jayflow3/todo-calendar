@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="부서원이 함께 쓰는 공용 업무 캘린더. 칸반·리스트·월간 캘린더·대시보드로 할일을 관리합니다.">
   <!-- CSP: 인라인 스크립트·스타일 금지, 외부 요청은 DB 도메인만. connect-src의 *.supabase.co는 배포 시 실제 프로젝트 주소로 좁힌다(docs/OPERATIONS.md). -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>부서 공용 업무 캘린더</title>
@@ -11,6 +12,8 @@
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
+  <!-- 저장된 테마를 첫 화면을 그리기 전에 적용(깜빡임 방지). 토글은 js/ui/themeToggle.js -->
+  <script src="js/theme.js"></script>
 </head>
 <body>
   <div id="unsupported" class="unsupported" role="alert" hidden></div>
@@ -23,6 +26,7 @@
         <button type="button" class="btn btn--ghost-on-brand" id="change-user">변경</button>
       </div>
       <button type="button" class="btn btn--secondary" id="new-task">새 할일</button>
+      <button type="button" class="btn btn--ghost-on-brand" id="theme-toggle">다크 모드</button>
     </div>
     <nav aria-label="뷰 전환">
       <div class="view-tabs" role="tablist" aria-label="보기 방식">
@@ -60,4 +64,4 @@
   <!-- 소스(js/)를 esbuild로 묶은 파일. file://에서도 열리도록 ES 모듈이 아닌 일반 스크립트다. npm run build -->
   <script src="dist/app.js"></script>
 </body>
-</html>
+</html

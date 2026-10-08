@@ -54,7 +54,7 @@ connect-src 'self' https://<프로젝트 ref>.supabase.co wss://<프로젝트 re
 
 | 복사 | 제외(개발용) |
 | --- | --- |
-| `index.html`, `css/`, `dist/app.js`, `js/compat.js`, `js/config.js`(**직접 만든 설정**), `vendor/supabase-js.umd.js` | `js/`의 나머지 소스, `tests/`, `tools/`, `docs/`, `supabase/`, `node_modules/`, `dev.html`, `PRD.md`, `package*.json` |
+| `index.html`, `css/`, `dist/app.js`, `js/compat.js`, `js/theme.js`, `js/config.js`(**직접 만든 설정**), `vendor/supabase-js.umd.js` | `js/`의 나머지 소스, `tests/`, `tools/`, `docs/`, `supabase/`, `node_modules/`, `dev.html`, `PRD.md`, `package*.json` |
 
 권장 웹서버 설정(nginx 예시, 사내 주소에 맞게 수정):
 
@@ -77,6 +77,19 @@ server {
 ```
 
 배포 후 새 버전이 반영되지 않으면 브라우저 캐시 때문일 수 있습니다. 모듈 파일은 `Cache-Control: no-cache`(조건부 요청)로 두는 것이 가장 단순합니다.
+
+### 4-1. Vercel(GitHub 연동)로 배포하기
+
+`js/config.js`는 git에 올리지 않으므로 GitHub에서 배포하면 파일이 없어 local 어댑터로 동작합니다. 그래서 **배포 시점에 환경변수로 `config.js`를 만듭니다**(`vercel.json`, `tools/deploy.mjs`). 키는 저장소에 들어가지 않습니다.
+
+1. Vercel 프로젝트를 GitHub 저장소에 연결합니다. 빌드 설정은 `vercel.json`이 정합니다(빌드 명령 `npm run vercel-build`, 출력 폴더 `public`).
+2. Vercel → Settings → Environment Variables에 두 값을 넣습니다(Production, Preview 모두).
+   - `SUPABASE_URL` = `https://<프로젝트 ref>.supabase.co`
+   - `SUPABASE_ANON_KEY` = **anon(public/publishable) key**. 관리자(service role, `sb_secret_…`) 키를 넣으면 빌드가 실패하며 배포되지 않습니다.
+3. 배포하면 `public/`에 4절 「복사」 목록과 같은 파일만 담기고(`tests/`, `PRD.md`, `supabase/` 등은 올라가지 않음) `public/js/config.js`가 생성됩니다. 환경변수가 없거나 주소 형식이 틀리면 local 모드로 조용히 배포되는 대신 빌드가 실패합니다.
+4. `js/`를 고쳤다면 먼저 `npm run build`로 `dist/app.js`를 갱신해 커밋합니다(Vercel은 커밋된 `dist/app.js`를 그대로 복사합니다).
+
+주의: Vercel 주소는 인터넷에 공개됩니다. 로그인이 없으므로 URL을 아는 누구나 읽고 쓸 수 있습니다([KNOWN_LIMITS.md](KNOWN_LIMITS.md) 3). 교육·시연용이 아니라면 접근을 제한하세요. 로컬에서 같은 결과를 확인하려면 `SUPABASE_URL=… SUPABASE_ANON_KEY=… npm run vercel-build`를 실행하면 `public/`이 만들어집니다(git 제외).
 
 ## 5. 백업과 복원 (주 1회 이상)
 

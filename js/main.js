@@ -10,6 +10,7 @@ import { initFilterBar } from './ui/filterBar.js';
 import { ensureCurrentUser, openIdentityDialog } from './ui/identity.js';
 import { memberName } from './ui/labels.js';
 import { openTaskForm } from './ui/taskForm.js';
+import { initThemeToggle } from './ui/themeToggle.js';
 import { showError } from './ui/toast.js';
 import { renderCalendarView } from './views/calendarView.js';
 import { renderDashboardView } from './views/dashboardView.js';
@@ -81,6 +82,7 @@ function wireShell() {
   const heading = document.getElementById('view-heading');
   document.getElementById('new-task').addEventListener('click', () => openTaskForm());
   document.getElementById('change-user').addEventListener('click', () => openIdentityDialog({ closable: true }));
+  initThemeToggle(document.getElementById('theme-toggle'));
 
   const syncTabs = wireTabs();
   initFilterBar({

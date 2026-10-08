@@ -1664,6 +1664,30 @@
     });
   }
 
+  // js/ui/themeToggle.js
+  var STORAGE_KEY3 = "todo.theme";
+  function storeTheme(theme) {
+    try {
+      localStorage.setItem(STORAGE_KEY3, theme);
+    } catch {
+    }
+  }
+  function initThemeToggle(button) {
+    const root = document.documentElement;
+    const render = () => {
+      const dark = root.getAttribute("data-theme") === "dark";
+      button.textContent = dark ? "라이트 모드" : "다크 모드";
+    };
+    button.addEventListener("click", () => {
+      const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      if (next === "dark") root.setAttribute("data-theme", "dark");
+      else root.removeAttribute("data-theme");
+      storeTheme(next);
+      render();
+    });
+    render();
+  }
+
   // js/views/calendarView.js
   init_date();
 
@@ -2465,6 +2489,7 @@
     const heading = document.getElementById("view-heading");
     document.getElementById("new-task").addEventListener("click", () => openTaskForm());
     document.getElementById("change-user").addEventListener("click", () => openIdentityDialog({ closable: true }));
+    initThemeToggle(document.getElementById("theme-toggle"));
     const syncTabs = wireTabs();
     initFilterBar({
       panel: document.getElementById("filter-panel"),

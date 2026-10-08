@@ -11,6 +11,7 @@
     "test:db": "node --test --test-concurrency=1 \"tests/db/*.db.js\"",
     "build": "node tools/build.mjs",
     "build:watch": "node tools/build.mjs --watch",
+    "vercel-build": "node tools/deploy.mjs",
     "pretest:e2e": "npm run build",
     "pretest:perf": "npm run build",
     "pretest:db": "npm run build"

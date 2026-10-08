@@ -1,5 +1,7 @@
 /* 디자인 토큰 (PRD 8.2). 색·간격·모서리·그림자·모션 값은 이 파일에서만 정의한다. */
 :root {
+  color-scheme: light;
+
   /* 색상 */
   --color-brand-violet: #7c3aed;
   --color-brand-indigo: #4f46e5;
@@ -12,6 +14,9 @@
   --color-border-strong: #64748b;
   --color-border-subtle: #e2e8f0;
   --color-focus-ring: #4f46e5;
+  --color-accent: #4f46e5;
+  --color-toast-bg: #1e1b4b;
+  --color-toast-fg: #ffffff;
   --color-error: #b91c1c;
   --color-overlay: rgba(30, 27, 75, 0.5);
   --color-skeleton: #e2e8f0;
@@ -91,4 +96,46 @@
   --font-weight-medium: 500;
   --font-weight-bold: 700;
   --line-height-base: 1.5;
+}
+
+/* 다크 테마: 색 토큰만 덮어쓴다. 켜는 방법은 <html data-theme="dark">(js/theme.js, 선택값은 localStorage). 맨 아래에 두어야 한다(tools/contrast.mjs가 이 블록부터를 다크로 읽는다). */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-brand-violet: #5b21b6;
+  --color-brand-indigo: #3730a3;
+  --color-bg: #0f0d1f;
+  --color-surface: #1b1836;
+  --color-text: #ede9fe;
+  --color-text-muted: #b6bccb;
+  --color-border-strong: #94a3b8;
+  --color-border-subtle: #332f58;
+  --color-focus-ring: #a5b4fc;
+  --color-accent: #a5b4fc;
+  --color-toast-bg: #ede9fe;
+  --color-toast-fg: #1e1b4b;
+  --color-error: #fca5a5;
+  --color-overlay: rgba(0, 0, 0, 0.65);
+  --color-skeleton: #2e2a52;
+
+  --badge-status-todo-fg: #e2e8f0;
+  --badge-status-todo-bg: #334155;
+  --badge-status-in-progress-fg: #bfdbfe;
+  --badge-status-in-progress-bg: #1e3a8a;
+  --badge-status-done-fg: #a7f3d0;
+  --badge-status-done-bg: #065f46;
+
+  --badge-priority-high-fg: #fecaca;
+  --badge-priority-high-bg: #7f1d1d;
+  --badge-priority-medium-fg: #fde68a;
+  --badge-priority-medium-bg: #78350f;
+  --badge-priority-low-fg: #cbd5e1;
+  --badge-priority-low-bg: #334155;
+
+  --badge-urgent-soon-fg: #fed7aa;
+  --badge-urgent-soon-bg: #7c2d12;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.4);
+  --shadow-dialog: 0 12px 40px rgba(0, 0, 0, 0.6);
 }

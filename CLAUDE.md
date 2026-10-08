@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm test` — 단위 테스트(`node --test`, `tests/*.test.js`).
 - `npm run test:perf` — 1,000건 성능 측정(`tests/perf/`). CPU 부하에 민감해 다른 작업 없이 따로 실행한다(일반 e2e와 섞지 않는다). 목표(필터 100ms·INP 200ms)에 근접해 실행마다 흔들린다.
 - `npm run test:db` — `tests/db/`: DB 제약·트리거·RLS와 실제 supabase 어댑터(브라우저)를 PostgREST/Supabase에 대해 검증. `SUPABASE_URL`·`SUPABASE_REST_URL`·`SUPABASE_ANON_KEY`가 없으면 건너뛴다. 로컬 검증 방법은 `docs/TEST_REPORT.md`의 「실제 DB 검증」.
-- `npm run test:e2e` — Playwright 시나리오(`tests/e2e/*.e2e.js`, 단계별 파일). `playwright-core`만 설치하고 **시스템에 설치된 Edge**(`channel: 'msedge'`)를 쓴다. 브라우저를 따로 내려받지 않는다. 스크린샷은 `SHOT_DIR=<폴더>`를 주면 저장한다.
+- `npm run test:e2e` — Playwright 시나리오(`tests/e2e/*.e2e.js`, 단계별 파일). `playwright-core`만 설치하고 **시스템에 설치된 Edge**(`channel: 'msedge'`)를 쓴다. 브라우저를 따로 내려받지 않는다. 스크린샷은 `SHOT_DIR=<폴더>`를 주면 저장한다. 테스트 서버 포트(8791~8796)가 막혀 `EACCES`가 나면(Windows가 8779~8978을 예약하는 PC) `E2E_PORT_OFFSET=10000`을 줘서 옮긴다.
 - 단일 테스트: `node --test --test-name-pattern="<이름>" tests/<파일>`
 - DB 스키마는 `supabase/migrations/0001_init.sql`. Supabase를 쓸 때만 적용하며 local 어댑터는 필요 없다.
 

@@ -60,7 +60,7 @@ npm run test:perf    # 1,000건 성능 측정(다른 작업 없이 따로 실행
 npm run test:db      # DB 계약·실제 supabase 어댑터(SUPABASE_URL 등 환경변수가 없으면 건너뜀)
 ```
 
-e2e는 `playwright-core`만 설치하고 **PC에 설치된 Microsoft Edge**를 씁니다(브라우저를 따로 내려받지 않습니다). 특정 파일만 돌리려면 `node --test tests/e2e/stage4.e2e.js`처럼 지정하고, 스크린샷을 저장하려면 `SHOT_DIR=<폴더>`를 줍니다. 실행 결과와 아직 검증하지 못한 항목은 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)에 정리했습니다.
+e2e는 `playwright-core`만 설치하고 **PC에 설치된 Microsoft Edge**를 씁니다(브라우저를 따로 내려받지 않습니다). 특정 파일만 돌리려면 `node --test tests/e2e/stage4.e2e.js`처럼 지정하고, 스크린샷을 저장하려면 `SHOT_DIR=<폴더>`를 줍니다. 테스트 서버 포트(8791~8796)가 막혀 `EACCES`가 나면(Windows가 해당 대역을 예약한 PC) `E2E_PORT_OFFSET=10000`을 줘서 포트를 옮깁니다. 실행 결과와 아직 검증하지 못한 항목은 [docs/TEST_REPORT.md](docs/TEST_REPORT.md)에 정리했습니다.
 
 ## 개발 규칙 요약
 

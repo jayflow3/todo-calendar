@@ -162,6 +162,13 @@
   gap: var(--space-2);
 }
 
+/* 좁은 화면: 이름이 채워지기 전(빈 칸)과 후에 줄바꿈이 달라져 헤더 아래가 밀리지 않도록, 사용자 영역을 항상 한 줄로 차지한다. */
+@media (max-width: 639px) {
+  .app-header__user {
+    flex: 1 0 100%;
+  }
+}
+
 .btn--ghost-on-brand {
   background: transparent;
   color: var(--color-on-brand);
@@ -231,7 +238,7 @@
   padding: 0;
   background: none;
   border: 0;
-  color: var(--color-brand-indigo);
+  color: var(--color-accent);
   font-weight: var(--font-weight-medium);
   text-align: left;
   text-decoration: underline;
@@ -432,8 +439,8 @@
   gap: var(--space-3);
   max-width: var(--size-toast-max);
   padding: var(--space-3) var(--space-4);
-  background: var(--color-text);
-  color: var(--color-on-brand);
+  background: var(--color-toast-bg);
+  color: var(--color-toast-fg);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-dialog);
   pointer-events: auto;
@@ -612,7 +619,7 @@
 .check input {
   width: var(--space-5);
   height: var(--space-5);
-  accent-color: var(--color-brand-indigo);
+  accent-color: var(--color-accent);
 }
 
 /* 칸반 */
@@ -633,7 +640,7 @@
 }
 
 .kanban-col.is-over {
-  border-color: var(--color-brand-indigo);
+  border-color: var(--color-accent);
   box-shadow: var(--shadow-card-hover);
 }
 
@@ -760,7 +767,7 @@
   padding: var(--space-1) var(--space-2);
   background: none;
   border: 0;
-  color: var(--color-brand-indigo);
+  color: var(--color-accent);
   font-weight: var(--font-weight-medium);
   text-decoration: underline;
   cursor: pointer;
@@ -857,7 +864,7 @@
   .cal-date[aria-pressed='true'] {
     background: var(--color-bg);
     border-radius: var(--radius-sm);
-    outline: 1px solid var(--color-brand-indigo);
+    outline: 1px solid var(--color-accent);
   }
 }
 
@@ -925,7 +932,7 @@
 }
 
 .bar__fill {
-  fill: var(--color-brand-indigo);
+  fill: var(--color-accent);
 }
 
 .bar__fill--todo {

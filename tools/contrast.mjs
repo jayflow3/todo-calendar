@@ -38,11 +38,11 @@ export const PAIRS = [
   ['보조 텍스트 / 앱 배경', '--color-text-muted', '--color-bg', 4.5],
   ['헤더 흰 글자 / 보라', '--color-on-brand', '--color-brand-violet', 4.5],
   ['헤더 흰 글자 / 인디고', '--color-on-brand', '--color-brand-indigo', 4.5],
-  ['링크·강조 / 카드', '--color-brand-indigo', '--color-surface', 4.5],
-  ['링크·강조 / 앱 배경', '--color-brand-indigo', '--color-bg', 4.5],
+  ['링크·강조 / 카드', '--color-accent', '--color-surface', 4.5],
+  ['링크·강조 / 앱 배경', '--color-accent', '--color-bg', 4.5],
   ['오류 텍스트 / 카드', '--color-error', '--color-surface', 4.5],
-  ['토스트 흰 글자 / 어두운 배경', '--color-on-brand', '--color-text', 4.5],
-  ['오류 토스트 흰 글자 / 빨강', '--color-on-brand', '--color-error', 4.5],
+  ['토스트 글자 / 토스트 배경', '--color-toast-fg', '--color-toast-bg', 4.5],
+  ['오류 토스트 글자 / 오류색', '--color-toast-fg', '--color-error', 4.5],
   ['배지 할 일', '--badge-status-todo-fg', '--badge-status-todo-bg', 4.5],
   ['배지 진행 중', '--badge-status-in-progress-fg', '--badge-status-in-progress-bg', 4.5],
   ['배지 완료', '--badge-status-done-fg', '--badge-status-done-bg', 4.5],
@@ -56,19 +56,25 @@ export const PAIRS = [
   ['포커스 링 / 카드', '--color-focus-ring', '--color-surface', 3],
   ['포커스 링 / 앱 배경', '--color-focus-ring', '--color-bg', 3],
   ['포커스 링(헤더, 흰색) / 보라', '--color-on-brand', '--color-brand-violet', 3],
-  ['막대 기본 / 트랙', '--color-brand-indigo', '--color-border-subtle', 3],
+  ['막대 기본 / 트랙', '--color-accent', '--color-border-subtle', 3],
   ['막대 할 일 / 트랙', '--color-border-strong', '--color-border-subtle', 3],
   ['막대 진행 중 / 트랙', '--badge-status-in-progress-fg', '--color-border-subtle', 3],
   ['막대 완료 / 트랙', '--badge-status-done-fg', '--color-border-subtle', 3],
   ['막대 과부하 / 트랙', '--badge-priority-high-fg', '--color-border-subtle', 3],
 ];
 
+/** 라이트(기본) 토큰 위에 `:root[data-theme='dark']` 블록을 덮어쓴 것이 다크 토큰이다. 두 테마 모두 검사한다. */
 export function checkAll(css = readFileSync(new URL('../css/tokens.css', import.meta.url), 'utf8')) {
-  const tokens = parseTokens(css);
-  return PAIRS.map(([name, fg, bg, min]) => {
-    const ratio = contrastRatio(tokens[fg], tokens[bg]);
-    return { name, fg: tokens[fg], bg: tokens[bg], ratio, min, pass: ratio >= min };
-  });
+  const darkAt = css.indexOf(":root[data-theme='dark']");
+  const light = parseTokens(darkAt < 0 ? css : css.slice(0, darkAt));
+  const themes = [['', light]];
+  if (darkAt >= 0) themes.push(['(다크) ', { ...light, ...parseTokens(css.slice(darkAt)) }]);
+  return themes.flatMap(([prefix, tokens]) =>
+    PAIRS.map(([name, fg, bg, min]) => {
+      const ratio = contrastRatio(tokens[fg], tokens[bg]);
+      return { name: prefix + name, fg: tokens[fg], bg: tokens[bg], ratio, min, pass: ratio >= min };
+    }),
+  );
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
